@@ -1,0 +1,47 @@
+\documentclass{article}
+\usepackage{amsthm}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{avant}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usetikzlibrary{shapes}
+\usepackage{hyperref}
+\usepackage[bottom]{footmisc}
+
+\renewcommand{\familydefault}{\sfdefault}   % cambio font
+\theoremstyle{definition}
+\newtheorem*{definition}{Definizione}
+\renewcommand{\figurename}{Figura}
+
+\pagestyle{fancy}
+\fancyfoot[L]{Basi di Dati}
+\fancyfoot[C]{\thepage}
+\fancyfoot[R]{Angelo Passarelli}
+
+\setcounter{section}{-1}
+
+\title{Basi di Dati}
+\author{Angelo Passarelli}
+\date{\today}
+
+\begin{document}    
+    \maketitle
+    \begin{center}
+        \includegraphics[scale=0.15]{img/Stemma_unipi.png}
+    \end{center}
+    \vspace{1cm}
+    \begin{center}
+        Appunti basati sulle lezioni e dispense della professoressa Giovanna Rosone \footnote{\url{https://pages.di.unipi.it/rosone/index.html}}
+    \end{center}
+    \pagebreak
+    \tableofcontents
+    \pagebreak
+
+    \begin{sloppypar}
+
+    \input{lezione1.tex}
+
+    \input{lezione2.tex}
+
+    \end{sloppypar}
+\end{document}
