@@ -44,17 +44,19 @@ La \textcolor{purple}{parzialità} invece è rappresentata con un taglio sulla l
 
 \begin{figure}[h]
     \centering
+    \captionsetup{justification=centering}
     \begin{tikzpicture}[node distance=6cm, scale=2, main/.style={rectangle, draw, minimum size=15mm}]
         \node[main] (1) {$C_1$};
         \node[main] (2) [right of=1]{$C_2$};
         \draw[<<->>] (1) -- (2) node[midway, above] {Nome Associazione};
         \draw (2.5, 0.1) -- (2.5, -0.1);
     \end{tikzpicture}
-    \caption{In questo caso abbiamo un'associazione \\ \emph{multivalore} da entrambe la parti, ma \emph{parziale} \\ per $C_2$ e \emph{totale} per $C_1$}.
+    \caption{In questo caso abbiamo un'associazione \emph{multivalore} da entrambe la parti, ma \emph{parziale} per $C_2$ e \emph{totale} per $C_1$}
 \end{figure}
 
 \begin{figure}[h]
     \centering
+    \captionsetup{justification=centering}
     \begin{tikzpicture}[node distance=4cm, scale=2, main/.style={rectangle, draw, minimum size=15mm}]
         \node[rectangle split, rectangle split parts=2, draw] (prop) {Nome Associazione \nodepart{second} Proprietà};
         \node[main] (1) [below left of=prop]{$C_1$};
@@ -68,8 +70,14 @@ La \textcolor{purple}{parzialità} invece è rappresentata con un taglio sulla l
 
 \begin{figure}[h]
     \centering
+    \captionsetup{justification=centering}
     \begin{tikzpicture}[node distance=4cm, scale=2, main/.style={rectangle, draw, minimum size=15mm}]
         \node[main] (1) {Persone};
+        \draw[->] (-0.3, -1) -- (-0.3, -0.38) node[midway, left] {\tiny{Ha madre}};
+        \draw[->>] (0.3, -1) -- (0.3, -0.38) node[midway, right] {\tiny{Ha figli}};
+        \draw[-] (-0.3, -1) -- (0.3, -1) node[midway, below] {\tiny{È madre di}};
+        \draw[-] (-0.35, -0.5) -- (-0.25, -0.5);
+        \draw[-] (0.25, -0.5) -- (0.35, -0.5);
     \end{tikzpicture}
     \caption{O possono anche essere \textcolor{purple}{ricorsive}}
 \end{figure}
