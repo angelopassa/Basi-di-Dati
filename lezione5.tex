@@ -1,0 +1,97 @@
+\section{Progettazione Logica}
+
+\subsection{Relazioni}
+
+\begin{definition}[Relazione Matematica]
+    Una \emph{relazione matematica} è un insieme di \emph{n}-uple ordinate
+    $(d_1, \dots, d_n)$ tali che $d_1 \in D_1, \dots, d_n \in D_n$.
+
+    Essendo un insieme, non c'è ordinamento fra le \emph{n}-uple, che inoltre devono essere
+    tutte distinte. Però l'ordinamento all'interno della \emph{n}-upla conta, infatti l'\emph{i}-esimo
+    valore deve provenire dall'\emph{i}-esimo dominio. Per questo si dice che la struttura della relazione
+    è \emph{\textcolor{purple}{posizionale}}.
+\end{definition}
+
+\begin{definition}[Attributo]
+    A ciascun dominio della relazione si associa un nome, chiamata \textbf{\textcolor{purple}{attributo}}.
+\end{definition}
+
+\begin{definition}[Tupla]
+    Una \textbf{\textcolor{purple}{tupla}} su un insieme di \emph{attributi} chiamato $X$, è una funzione
+    $t$ che associa a ciascun \emph{attributo} un valore del suo \emph{dominio}.
+
+    Una \emph{\textcolor{purple}{relazione su $X$}} è un insieme di \emph{tuple}
+    su $X$.
+\end{definition}
+
+\subsection{Tabelle}
+Una \textbf{\textcolor{purple}{tabella}} rappresenta una relazione se:
+\begin{itemize}
+    \item I valori di ogni \emph{colonna} sono fra loro \emph{omogenei}.
+    \item Le \emph{righe} sono tutte \emph{diverse} fra loro.
+    \item Le \emph{intestazioni} delle colonne sono tutte \emph{diverse} fra loro.
+\end{itemize}
+
+In una \emph{tabella} l'ordinamento tra le righe e le colonne è irrilevante.
+
+In ogni tabella è possibile distinguere due parti:
+\begin{itemize}
+    \item Lo \textbf{\textcolor{purple}{schema}} è rappresentato dalle intestazioni della tabella, che sono invarianti nel tempo e descrivono la
+        struttura della tabella (\textbf{\textcolor{purple}{aspetto intensionale}}).
+    \item L'\textbf{\textcolor{purple}{istanza}} sono i valori attuali presenti nella tabella, che
+        possono cambiare nel tempo (\textbf{\textcolor{purple}{aspetto estensionale}}).
+\end{itemize}
+
+\begin{definition}[Tipo Ennupla]
+    Un \textcolor{purple}{tipo ennupla} chiamato $T$ è un insieme finito di coppie (\emph{Attributo}, \emph{Tipo Elementare}).
+\end{definition}
+
+\begin{definition}[Schema di Relazione]
+    Se $T$ è un \emph{tipo ennupla}, allora $R(T)$ è lo \textcolor{purple}{schema della relazione $R$}.
+\end{definition}
+
+\begin{definition}[Schema di Database]
+    Lo \textcolor{purple}{schema di un database} è un insieme di \emph{schemi di relazioni} $R_i(T_i)$.
+\end{definition}
+
+\begin{definition}[Istanza di Relazione]
+    Un'\textcolor{purple}{istanza di relazione}, anche chiamata \textbf{\textcolor{purple}{relazione}} su uno
+    schema $R(T)$ è l'insieme $r$ di tuple di tipo $T$.
+\end{definition}
+
+\begin{definition}[Istanza di Database]
+    Un'\textcolor{purple}{istanza di database} su uno schema $R=\{R_1(T_1), \dots, R_n(T_n)\}$
+    è l'insieme delle \emph{relazioni} $r=\{r_1, \dots, r_n\}$, dove $r_i$ è un'\emph{istanza di relazione} su $R_i(T_i)$.
+\end{definition}
+
+\paragraph{Valore Nullo} Si indica con \verb|NULL|, e indica l'assenza di un valore del dominio.
+
+\subsection{Vincoli di Integrità}
+Un \textbf{\textcolor{purple}{vincolo d'integrità}} è una proprietà che deve
+essere soddisfatta da ogni singola \emph{istanza} della relazione, in modo tale che rappresenti informazioni
+corrette per l'applicazione.
+
+Il vincolo viene espresso mediante un predicato, che associa ad ogni \emph{istanza} il valore \emph{\textcolor{Green}{vero}}
+o \emph{\textcolor{red}{falso}}.
+
+I vincoli si possono classificare in:
+\begin{itemize}
+    \item Vincoli \textcolor{purple}{intrarelazionali}: ovvero quelli che devono essere rispettati da valori della relazioni presa in considerazione, e possono essere:
+        \begin{itemize}
+            \item Vincoli sul \textcolor{purple}{dominio}, che coinvolgono un solo \emph{attributo}.
+            \item Vincoli di \textcolor{purple}{ennupla}, che esprimono condizioni sui valori di ogni ennupla, indipendentemente dalle altre ennuple.
+        \end{itemize}
+    \item Vincoli \textcolor{purple}{interrelazionali}: sono quei vincoli che devono essere rispettati da valori presenti in relazioni diverse.
+\end{itemize}
+
+\subsection{Chiavi}
+
+\begin{definition}[Superchiave]
+    Un insieme $K$ di attributi viene chiamato \textbf{\textcolor{purple}{superchiave}} per una
+    relazione $r$, se $r$ non contiene due ennuple distinte $t_1, t_2$ tali che $t_1[K] = t_2[K]$.
+\end{definition}
+
+\begin{definition}[Chiave]
+    $K$ invece viene definito \textbf{\textcolor{purple}{chiave}} per $r$ se è una \emph{\textcolor{purple}{superchiave minimale}} per $r$, ovvero
+    non deve contenere altre \emph{superchiavi}.
+\end{definition}
