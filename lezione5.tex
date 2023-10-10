@@ -1,4 +1,9 @@
 \section{Progettazione Logica}
+L'obbiettivo della \textbf{\textcolor{purple}{progettazione logica}} è quello di ridefinire lo \emph{schema concettuale}
+in uno \emph{schema logico relazionale} che rappresenti gli stessi dati ma in una maniere più efficiente 
+(minimizzando la \textcolor{purple}{ridondanza}) e corretta, per esempio tenendo conto della dimensione dei dati e del
+tipo di operazioni che si effettueranno sul database. Anche perchè alcuni costrutti dello 
+\emph{schema relazionale} non sono rappresentabili concretamente.
 
 \subsection{Relazioni}
 
@@ -95,3 +100,27 @@ I vincoli si possono classificare in:
     $K$ invece viene definito \textbf{\textcolor{purple}{chiave}} per $r$ se è una \emph{\textcolor{purple}{superchiave minimale}} per $r$, ovvero
     non deve contenere altre \emph{superchiavi}.
 \end{definition}
+
+\paragraph{\textcolor{purple}{Nota Bene}} Dato che una \emph{relazione} non può contenere ennuple
+con valori uguali, allora per ogni \emph{relazione} esiste sempre una \textcolor{purple}{superchiave} rappresentata
+dall'insieme di tutti gli attributi su cui è definita.
+
+\begin{definition}[Chiave Primaria]
+    Una \textbf{\textcolor{purple}{chiave primaria}} è una \emph{chiave} sulla quale non sono ammessi valori
+    nulli.
+\end{definition}
+
+Nel modello relazionale per correlare due relazioni diversi si usano i valori delle \emph{chiavi primarie}.
+
+\begin{definition}[Integrità Referenziale]
+    Un vincolo di \textbf{\textcolor{purple}{integrità referenziale}}, anche chiamato \emph{\textcolor{purple}{foreign key}},
+    fra alcuni attributi $X$ di una relazione $R_1$ e un'altra relazione $R_2$ impone ai valori di $X$ di comparire come valori della
+    \emph{chiave primaria} di $R_2$.
+\end{definition}
+
+\paragraph{\textcolor{purple}{Violazioni}} Se per esempio si provasse ad eliminare
+una ennupla dalla tabella che viene riferita si verificherebbe un rifiuto dell'operazione, nel caso in cui
+la \emph{chiave primaria} di quella ennupla viene riferita da altre ennuple di altre tabelle.
+Quindi in questo caso occorre procedere con un'\emph{eliminazione a cascata}, ovvero si impostano prima
+a \verb|NULL| i valori degli attributi delle ennuple delle tabelle che contengono riferimenti a quella \emph{chiave primaria};
+successivamente si può procedere con l'eliminazione della ennupla che adesso non verrà più riferita.
