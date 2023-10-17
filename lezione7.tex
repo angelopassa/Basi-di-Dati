@@ -1,0 +1,219 @@
+\section{Algebra Relazionale}
+
+\begin{definition}[Algebra Relazionale]
+    Con \textbf{\textcolor{purple}{algebra relazionale}} si intende un
+    insieme di \emph{operatori} su relazioni che danno come risultato altre relazioni.
+    Non viene usato come linguaggio di interrogazione dei \emph{DBMS}, ma come rappresentazione
+    interna delle interrogazioni.
+\end{definition}
+
+\subsection{Operatori Insiemistici}
+Le relazioni vengono viste come degli \emph{\textcolor{purple}{insiemi}}.
+Gli operatori di \emph{\textcolor{purple}{unione}}, \emph{\textcolor{purple}{differenza}}
+ed \emph{\textcolor{purple}{intersezione}} sono applicabili solo a relazioni
+definite sugli stessi \emph{attributi}.
+\begin{itemize}
+    \item \textbf{\textcolor{purple}{Unione}}: l'unione di due relazioni $R$ e $S$ definite
+        sullo stesso insieme di attributi $X$ è indicata con $R \cup S$ ed è una relazione su $X$
+        che contiene le tuple che appartengono a $R$ o a $S$ senza ripetizioni.
+    \item \textbf{\textcolor{purple}{Differenza}}: la differenza è indicata con $R - S$ ed è una relazione sempre su
+        $X$ che contiene tutte le tuple che appartengono ad $R$ ma non a $S$.
+    \item \textbf{\textcolor{purple}{Ridenominazione}}: è un operatore \emph{\textcolor{purple}{monadico}}, ovvero su una sola relazione, che permette
+        di modificare lo schema, ridenominando il nome di uno o più attributi, ma lasciando inalterate le istanze.
+        \begin{center}
+            $\rho_{\;Nuovo\;Nome\;Attributo\;\leftarrow\;Vecchio\;Nome\;Attributo}\;(Relazione)$
+        \end{center}
+    \item \textbf{\textcolor{purple}{Proiezione}}: è un altro operatore \emph{monadico} che produce un
+        risultato su un sottoinsieme degli attributi della relazione e contiene le ennuple della
+        relazione ristrette solo agli attributi del sottoinsieme.
+        \begin{center}
+            $\pi_{\;Lista\;Attributi}\;(Relazione)$
+        \end{center}
+        La cardinalità di una \emph{proiezione} è basata sul sottoinsieme $X$ degli
+        attributi:
+        \begin{itemize}
+            \item Se $X$ è una \emph{superchiave} di $R$, allora $\pi_{X}(R)$ contiene esattamente
+                tante ennuple quante ne contiene $R$.
+            \item Altrimenti se $X$ non è \emph{superchiave}, potrebbero essere presenti dei valori che
+                su quegli attributi sono ripetuti e che quindi vengono rappresentati una sola volta.
+        \end{itemize}
+    \item \textbf{\textcolor{purple}{Selezione}} o \textbf{\textcolor{purple}{Restrizione}}: è sempre un operatore
+        \emph{monadico} che produce una relazione con lo stesso schema dell'operando, che contiene un sottoinsieme delle sue ennuple
+        che soddisfano una data condizione.
+        \begin{center}
+            $\sigma_{\;Cond}\;(R)$
+        \end{center}
+        Con $Cond$ generata dalla seguente grammatica: \\ \\
+        \verb+ Cond ::= Exp Theta Exp | Cond And Cond | Cond Or Cond | Not Cond + \\
+        \verb+ Exp ::= Attributo | Costante | Exp Op Exp + \\
+        \verb+ Theta ::= = | < | > | != | <= | >=+ \\
+        \verb1 Op ::= + | - | * | StringConcat 1 \\ \\
+        Le condizioni atomiche si riferiscono solo ai valori non nulli, per riferirsi anche
+        ai valori nulli si usano forme di condizioni come \verb|IS NULL| e \verb|IS NOT NULL|.
+    \item \textbf{\textcolor{purple}{Prodotto}}: operatore fra più relazioni che devono avere
+        fra loro tutti i nomi degli attributi distinti, e che esegue il prodotto cartesiano fra gli
+        insiemi di tuple.
+    \item \textbf{\textcolor{purple}{Intersezione}}: l'intersezione è indicata con $R \cap S$ ed è una relazione definita
+        sullo stesso insieme di attributi $X$ che contiene le tuple che appartengono sia ad $R$ che ad $S$.
+        L'\emph{intersezione} è chiamato operatore \emph{\textcolor{purple}{derivato}}, dato che è possibile derivarlo usando altri
+        operatori:
+        \begin{center}
+            $R \cap S \; = \; \{x \;|\; x \in R \land \exists \; y \in S \;t.c.\; x = y \}$
+        \end{center}
+        allora se per esempio $R$ ed $S$ sono definiti con $X = \{A, B\}$.
+        \begin{center}
+            $\pi_{A, B}(\sigma_{A=S.A\;AND\;B=S.B}(R \times \rho_{S}(S)))$
+        \end{center}
+        Partendo dall'interno, si ridenominano tutti gli attributi di $S$ ponendogli davanti
+        il prefisso $S$, successivamente viene fatto il \emph{prodotto} con $R$ e tramite la
+        \emph{selezione} selezioniamo solo le tuple che hanno gli attributi semanticamente uguali con
+        gli stessi valori. Infine si fà una \emph{proiezione} per eliminare gli attributi ridondanti.
+\end{itemize}
+
+\subsubsection{Join}
+Il \textbf{\textcolor{purple}{join}} o \textbf{\textcolor{purple}{giunzione}} permette di
+correlare dati in relazioni diverse. Anch'esso è un operatore derivato in quanto si può ottenere per composizione
+degli operatori visti precedentemente. Si indica con il simbolo $\bowtie$.
+
+Il \textbf{\textcolor{purple}{join naturale}} produce un'unione degli attributi dei due operandi, combinando le ennuple
+degli operandi che hanno valori uguali sugli attributi in comune. Ad esempio $R_1 \bowtie R_2$ è una relazione su $X_1 \cup X_2$ definita come segue:
+\begin{center}
+    $R_1 \bowtie R_2 = \{t \;su\; X_1 \cup X_2 \;|\; esistono \;t_1 \in R_1 \;e\; t_2 \in R_2 $ \\
+    $\;con\; t[X_1] = t_1 \;e\; t[X_2] = t_2\}$
+\end{center}
+
+Un \emph{join} viene chiamato \emph{\textcolor{purple}{completo}} se ogni ennupla delle due relazioni
+contribuisce al risultato. Al contrario si parla di \emph{join} \emph{\textcolor{purple}{non completo}}.
+Generalmente possiamo definire un limite inferiore e superiore alla cardinalità di una join:
+\begin{center}
+    $0 \leq |R_1 \bowtie R_2| \leq |R_1| \times |R_2|$
+\end{center}
+Nel caso il join è \emph{completo} possiamo restringere il limite inferiore
+dicendo che $|R_1 \bowtie R_2| \geq \max\{|R_1|, |R_2|\}$.
+\\\\
+Nel caso in cui il join coinvolge come attributo comune una \emph{chiave} di $R_2$, allora:
+\begin{center}
+    $0 \leq |R_1 \bowtie R_2| \leq |R_1|$
+\end{center}
+
+Se oltre a coinvolgere una \emph{chiave} di $R_2$, vi è un vincolo di \emph{integrità referenziale} tra un
+attributo di $R_1$ e la chiave di $R_2$ allora la cardinalità della join è esattamente $|R_1|$.
+\\\\
+Un \textbf{\textcolor{purple}{join esterno}} estende con valori nulli le ennuple che verrebbero
+tagliate fuori da un \emph{\textcolor{purple}{join naturale}}.
+Esiste in tre versioni:
+\begin{itemize}
+    \item \textcolor{purple}{Join esterno sinistro} $R \overset{\leftarrow}{\bowtie} S$: mantiene tutte le ennuple del primo
+        operando, estendendole con valori nulli se necessario.
+    \item \textcolor{purple}{Join esterno destro} $R \overset{\rightarrow}{\bowtie} S$: mantiene tutte le ennuple del secondo
+    operando, estendendole con valori nulli se necessario.
+    \item \textcolor{purple}{Join esterno completo} $R \overset{\leftrightarrow}{\bowtie} S$: mantiene tutte le ennuple di entrambi
+        gli operandi, estendendole con valori nulli se necessario.
+\end{itemize}
+
+\paragraph{\textcolor{purple}{Nota Bene}} Il \emph{prodotto cartesiano} si può
+vedere come un \emph{join naturale} su relazioni che non hanno attributi in comune.
+\\ \\
+Dato che il \emph{\textcolor{purple}{prodotto cartesiano}} non ha senso se non
+lo facciamo seguire da una selezione (che permette di specificare la condizione sui campi
+che semanticamente rappresentano lo stesso attributo), si usa l'operazione di
+\textbf{\textcolor{purple}{theta-join}} definito come segue:
+\begin{center}
+    $R_1 \bowtie_{\;Condizione} R_2$
+\end{center}
+che è equivalente a:
+\begin{center}
+    $\sigma_{\;Condizione}\;(R_1 \bowtie R_2)$
+\end{center}
+\textbf{N.B.}: dato che $R_1$ ed $R_2$ non hanno attributi comuni, in
+questo caso $\bowtie \;= \times$.
+
+Se nel \emph{theta-join} l'operatore di confronto nella $Condizione$ è sempre
+l'uguaglianza, allora si parla di \textbf{\textcolor{purple}{equi-join}}.
+
+\paragraph{\textcolor{purple}{Self Join}} Supponiamo di avere questa relazione \verb|Genitori|:
+\begin{center}
+    \begin{tabular}{|c|c|}
+        \hline
+        \rowcolor{purple}
+        \textcolor{white}{Genitore} & \textcolor{white}{Figlio} \\
+        \hline
+        Luca & Anna \\
+        \hline
+        Maria & Anna \\
+        \hline
+        Giorgio & Luca \\
+        \hline
+        Silvia & Maria \\
+        \hline
+        Enzo & Maria \\
+        \hline
+    \end{tabular}
+\end{center}
+
+e di voler ottenere una relazione \verb|Nonno-Nipoti|. Per far ciò occorre riutilizzare la stessa
+tabella ma facendo $Genitori \bowtie Genitori$ si otterrebbe di nuovo la tabella \verb|Genitori|.
+In questo caso occorre ridenominare la tabella due volte:
+
+\begin{table}[H]
+    \parbox{.55\linewidth}{
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        \rowcolor{purple}
+        \textcolor{white}{Nonno} & \textcolor{white}{Genitore} \\
+        \hline
+        Luca & Anna \\
+        \hline
+        Maria & Anna \\
+        \hline
+        Giorgio & \textcolor{blue}{Luca} \\
+        \hline
+        Silvia & \textcolor{red}{Maria} \\
+        \hline
+        Enzo & \textcolor{red}{Maria} \\
+        \hline
+    \end{tabular}
+    \caption{$\rho_{\;Nonno,\;Genitore \leftarrow Genitore,\;Figlio}(Genitore)$}
+    }
+    \hfill
+    \parbox{.45\linewidth}{
+    \centering
+    \begin{tabular}{|c|c|}
+        \hline
+        \rowcolor{purple}
+        \textcolor{white}{Genitore} & \textcolor{white}{Nipote} \\
+        \hline
+        \textcolor{blue}{Luca} & Anna \\
+        \hline
+        \textcolor{red}{Maria} & Anna \\
+        \hline
+        Giorgio & Luca \\
+        \hline
+        Silvia & Maria \\
+        \hline
+        Enzo & Maria \\
+        \hline
+    \end{tabular}
+    \caption{$\rho_{\;Nipote \leftarrow Figlio}(Genitore)$}
+    }
+\end{table}
+Infine, effettuando una \emph{join} seguita da una \emph{proiezione} otteniamo:
+\begin{center}
+    \begin{tabular}{|c|c|}
+        \hline
+        \rowcolor{purple}
+        \textcolor{white}{Nonno} & \textcolor{white}{Nipote} \\
+        \hline
+        Giorgio & Anna \\
+        \hline
+        Silvia & Anna \\
+        \hline
+        Enzo & Anna \\
+        \hline
+    \end{tabular}
+\end{center}
+
+\begin{center}
+    $\pi_{\;Nonno,\;Nipote}(\rho_{\;Nonno,\;Genitore \leftarrow Genitore,\;Figlio}(Genitore) \bowtie \rho_{\;Nipote \leftarrow Figlio}(Genitore))$
+\end{center}
