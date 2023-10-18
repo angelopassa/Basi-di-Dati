@@ -1,0 +1,117 @@
+\subsection{Raggruppamento}
+Il \textbf{\textcolor{purple}{raggruppamento}} è definito dall'espressione $_{\{A_i\}}\gamma_{\{f_i\}}(R)$,
+dove gli $A_i$ sono gli attributi di $R$ mentre le $f_i$ sono funzioni di aggregazione.
+Il \emph{raggruppamento} prima partiziona le ennuple di $R$ mettendo nello stesso gruppo
+le ennuple con valori uguali solo sui campi degli $A_i$, successivamente si calcolano le
+funzioni $f_i$ per ogni partizione. Infine per ogni partizione verrà restituita una solo ennupla
+che avrà come attributi i valori degli $A_i$ e i valori delle funzioni $f_i$.
+
+\subsection{Trasformazioni Algebriche}
+Permettono di scegliere diversi ordini di \emph{join} e di anticipare
+\emph{proiezioni} e \emph{selezioni} per lavorare su tabelle più piccole.
+
+\begin{center}
+    \textbf{\textcolor{purple}{Idempotenza delle Proiezioni}}
+\end{center}
+\begin{equation}
+    \pi_{A}(\pi_{A,B}(R)) \equiv \pi_{A}(R)
+\end{equation}
+
+\begin{center}
+    \textbf{\textcolor{purple}{Atomizzazione delle Selezioni}}
+\end{center}
+\begin{equation}
+    \sigma_{Cond_{1}}(\sigma_{Cond_{2}}(R)) \equiv \sigma_{Cond_{1} \land Cond_{2}}(R)
+\end{equation}
+
+\begin{center}
+    \textbf{\textcolor{purple}{Atomizzazione della Selezione rispetto al Join}} \\
+    \emph{\textcolor{purple}{Pushing Selection Down}}
+\end{center}
+\begin{equation}
+    \sigma_{Cond}(R \bowtie S) = R \bowtie \sigma_{Cond}(S)
+\end{equation}
+\begin{center}
+    Se $Cond$ fà riferimento solo agli attributi di $S$.
+\end{center}
+
+\begin{center}
+    \textbf{\textcolor{purple}{Anticipazione della Proiezione rispetto al Join}} \\
+    \emph{\textcolor{purple}{Pushing Projections Down}}
+\end{center}
+\begin{equation}
+    \pi_{X_1Y_2}(R \bowtie S) = R \bowtie \pi_{Y_2}(S)
+\end{equation}
+\begin{center}
+    Se $R$ è definito su $X_1$ e $S$ su $X_2$, $Y_2 \subseteq X_2$ e gli attributi
+    in $X_2 - Y_2$ non sono coinvolti nel join.
+\end{center}
+
+\begin{center}
+    \textbf{\textcolor{purple}{Distributività della Selezione}}
+\end{center}
+\begin{equation}
+    \sigma(R \cup S) = \sigma(R) \cup \sigma(S)
+\end{equation}
+\begin{equation}
+    \sigma(R - S) = \sigma(R) - \sigma(S)
+\end{equation}
+
+\begin{center}
+    \textbf{\textcolor{purple}{Distributività della Proiezione}}
+\end{center}
+\begin{equation}
+    \pi_{X}(R \cup S) = \pi_{X}(R) \cup \pi_{X}(S)
+\end{equation}
+\paragraph{\textcolor{purple}{Nota Bene}} La \emph{proiezione} sulla \emph{differenza}
+non gode della proprietà di \emph{distributività}:
+\begin{equation}
+    \pi_{X}(R - S) <> \pi_{X}(R) - \pi_{X}(S)
+\end{equation}
+
+\begin{center}
+    \textbf{\textcolor{purple}{Inglobamento della Selezione nella Join}}
+\end{center}
+\begin{equation}
+    \sigma_{Cond}(R \bowtie S) \equiv R \bowtie_{Cond} S
+\end{equation}
+
+\par\noindent\rule{\textwidth}{0.5pt}
+\par
+
+\begin{equation}
+    \sigma_{Cond_{1} \land Cond_{2}}(R \times S) \equiv \sigma_{Cond_{1}}(R) \times \sigma_{Cond_{2}}(S)
+\end{equation}
+
+\begin{equation}
+    \sigma_{Cond_{1} \lor Cond_{2}}(R) \equiv \sigma_{Cond_{1}}(R) \cup \sigma_{Cond_{2}}(R)
+\end{equation}
+
+\begin{equation}
+    \sigma_{Cond_{1} \land Cond_{2}}(R \times S) \equiv \sigma_{Cond_{1}}(R) \cap \sigma_{Cond_{2}}(R)
+\end{equation}
+
+\begin{equation}
+    \sigma_{Cond_{1} \land \neg Cond_{2}}(R \times S) \equiv \sigma_{Cond_{1}}(R) - \sigma_{Cond_{2}}(R)
+\end{equation}
+
+\begin{equation}
+    R \times (S \times T) \equiv (R \times S) \times T
+\end{equation}
+
+\begin{equation}
+    (R \times S) \equiv (S \times R)
+\end{equation}
+
+\begin{equation}
+    \sigma_{Cond}(_X\gamma_F(R))\;\equiv\;_X\gamma_F(\sigma_{Cond}(R))
+\end{equation}
+
+\subsection{Operatori Non Insiemistici}
+
+\paragraph{\textcolor{purple}{Proiezione MultiInsiemistica}}
+$\pi^{b}_{A_i}(R)$, la $b$ sta ad indicare che le tuple duplicate non vanno eliminate.
+
+\paragraph{\textcolor{purple}{Ordinamento}}
+$\tau_{A_i}(R)$, ordina i valori degli attributi di ogni tupla seguendo l'ordine
+degli $A_i$.
