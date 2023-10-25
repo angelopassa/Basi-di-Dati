@@ -1,0 +1,155 @@
+\section{SQL}
+Le interrogazioni al database vengono fatte mediante il comando
+\verb|SELECT|, nel quale occorre specificare la lista degli attributi interessati.
+Il comando presenta anche due clausole, \verb|FROM| che indica in quali tabelle
+sono contenuti i dati, e \verb|WHERE| (\emph{opzionale}) per esprimere le condizioni che i dati
+devono soddisfare.
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+ ]
+SELECT Lista Attributi
+FROM Lista Tabelle
+[WHERE Condizione]
+\end{lstlisting}
+
+Specificare la \emph{Lista Attributi}, anche chiamata \textbf{\textcolor{purple}{target list}}
+rappresenta l'operazione di \emph{\textcolor{purple}{proiezione}}.
+La clausola \verb|WHERE|, invece permette di implementare la \emph{\textcolor{purple}{selezione}}.
+
+Il \textbf{\textcolor{purple}{theta-join}}, invece è implementato indicando nella clausola
+\verb|FROM| le due tabelle, e nel \verb|WHERE| la condizione che stabilisce quali righe accoppiare.
+
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+ ]
+SELECT *
+FROM Studenti, Esami
+WHERE Studenti.Matricola = Esami.Studenti
+\end{lstlisting}
+
+Nel caso in cui la clausola \verb|WHERE| non è presente, la query sopra indicata esegue il prodotto cartesiano
+anche chiamato \emph{\textcolor{purple}{cross-join}}.
+
+\paragraph{\textcolor{purple}{DISTINCT}} \emph{SQL} è un linguaggio che
+lavora su \emph{multiinsiemi}, quindi di \emph{default}, a seguito di una \emph{query},
+potrebbero essere presenti righe identiche. Per evitare ciò basta specificare questo facendo seguire il comando
+\verb|SELECT| dalla clausola \verb|DISTINCT|.
+
+\paragraph{\textcolor{purple}{Ridenominazione}} Per ridenomiare un attributo, basta farlo seguire da
+\verb|AS Nuovo Nome Attributo|.
+Mentre per ridenomiare una tabella, basta far seguire il nome originale nella clausola \verb|FROM| dal nuovo nome.
+
+\paragraph{\textcolor{purple}{JOIN}} L'operazione di \emph{\textcolor{purple}{Join}}, oltre che essere implementato
+come visto prima tramite la combinazione di \verb|FROM| e \verb|WHERE|, è possibile codificarla in modo esplicito, ecco alcuni esempi:
+\begin{itemize}
+    \item \verb|Studenti s JOIN Esami e ON s.Matricola = e.Matricola|
+    \item \verb|Studenti s JOIN Esami e USING Matricola|
+    \item \verb|Studenti s NATURAL JOIN Esami|
+    \item \verb|Studenti s LEFT [OUTER] JOIN Esami e| \\
+        \verb|ON s.Matricola = e.Matricola|
+\end{itemize}
+
+\paragraph{\textcolor{purple}{Self-Join}} Per implementare il \emph{self-join} occorre prima ridenominare
+la tabella due volte:
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+ ]
+SELECT T1.*, T2.*
+FROM Tabella T1, Tabella T2
+WHERE T1.codice = T2.codice
+\end{lstlisting}
+
+\paragraph{\textcolor{purple}{SottoSelect} o \textcolor{purple}{SubQuery}} È possibile innestare una \verb|SELECT| in un'altra, tramite le parole chiave
+\verb|ANY|, \verb|ALL|, \verb|[NOT] IN|, \verb|[NOT] EXISTS|, più tutte gli altri operatori della clausola \verb|WHERE|, seguita dalla \emph{sottoselect}.
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+ ]
+SELECT *
+FROM Studenti
+WHERE voto > (SELECT AVG(voto)
+              FROM Studenti)
+\end{lstlisting}
+
+Oppure è possibile fare operazioni insiemistiche tra i risultati di due \verb|SELECT| tramite gli operatori
+\verb|UNION|, \verb|INTERSECT|, \verb|EXCEPT|.
+
+Ci sono tre tipologie di \emph{subquery}:
+\begin{itemize}
+    \item Subquery \textcolor{purple}{Scalari}: una \verb|SELECT| che restituisce un solo valore.
+    \item Subquery di \textcolor{purple}{Colonna}: restituisce una colonna.
+    \item Subquery di \textcolor{purple}{Tabella}: restituisce una tabella.
+\end{itemize}
+
+\paragraph{\textcolor{purple}{LIKE}} Questo operatore è usato per effettuare dei \emph{pattern matching} con una stringa
+tramite l'uso di due \emph{\textcolor{purple}{wildcard}}:
+\begin{itemize}
+    \item \textbf{\textcolor{purple}{\%}} : che denota la presenza di $0$ o più caratteri.
+    \item \textbf{\textcolor{purple}{\_}} : presenza di esattamente $1$ carattere.
+\end{itemize}
+
+Nel caso si voglione usare le \emph{wildcards} nel \emph{patter matching}, si imposta un carattere di \emph{\textcolor{purple}{escape}}:
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+ ]
+SELECT *
+FROM Modelli
+WHERE nome_modello LIKE 'C#_F%' ESCAPE '#'
+\end{lstlisting}
+
+\paragraph{\textcolor{purple}{NULL}} Quando si confronta un attributo
+con \verb|NULL| è sempre consigliabile farlo tramite gli operatori \verb|IS [NOT] NULL|, dato che
+il confronto tramite l'uguaglianza, nel caso in cui il valore dell'attributo sia \verb|NULL|, restituisce \emph{valore sconosciuto},
+ovvero \verb|NULL|, e non un valore \emph{booleano}.
+Nel calcolo di espressioni, inoltre, se si incontra
+un valore \verb|NULL|, viene sempre restituito \emph{valore sconosciuto}.
+
+\paragraph{\textcolor{purple}{ORDER BY}} Permette di dare un ordinamento
+del risultato della \verb|SELECT|, basandosi sui valori di uno o più attributi e opzionalmente
+indicando in maniera esplicita se l'ordine deve essere crescente (\verb|ASC|, predefinito) o decrescente
+(\verb|DESC|).
+
+\subsection{Operatori Aggregati}
+
+Nella \emph{target list} possiamo avere anche espressioni che calcolano
+valori a partire da un insieme di ennuple, e che restituiscono un singolo valore
+scalare. \emph{SQL} prevede 5 operatori aggregati:
+\begin{itemize}
+    \item \textbf{\textcolor{purple}{Count}}: restituisce il numero di righe del risultato della \emph{query}. Mediante
+        la specifica \verb|(*)| si contano tutte le righe selezionate, con \verb|ALL| (specifica di \emph{default}) si contano tutte le righe selezionate che non sono \verb|NULL|,
+        mentre con \verb|DISTINCT| si contano tutte le righe non nulle con valori distinti.
+    \item \textbf{\textcolor{purple}{Max \& Min}}: calcolano rispettivamente il massimo e il minimo degli elementi presenti
+        in un colonna dello schema.
+    \item \textbf{\textcolor{purple}{Avg}}: calcola la media dei valori non nulli su una colonna, si possono utilizzare le specifiche \verb|ALL| e \verb|DISTINCT|.
+    \item \textbf{\textcolor{purple}{Sum}}: somma tutti i valori non nulli su una colonna, anche qui si trovano le specifiche \verb|ALL| e \verb|DISTINCT|.
+\end{itemize}
+
+\paragraph{\textcolor{purple}{GROUP BY}} Se si vogliono applicare gli operatori aggregati non sull'intera
+tabella ma raggruppando i valori per un sottoinsieme di attributi si utilizza la clausola \verb|GROUP BY|, che specifica
+gli attributi su cui fare i raggruppamenti. Le funzioni di aggregazione saranno applicate su ogni gruppo.
+
+\paragraph{\textcolor{purple}{HAVING}} Tramite questa clausola si possono applicare condizioni sui valori aggregati per ogni gruppo. 
