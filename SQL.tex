@@ -74,32 +74,6 @@ FROM Tabella T1, Tabella T2
 WHERE T1.codice = T2.codice
 \end{lstlisting}
 
-\paragraph{\textcolor{purple}{SottoSelect} o \textcolor{purple}{SubQuery}} È possibile innestare una \verb|SELECT| in un'altra, tramite le parole chiave
-\verb|ANY|, \verb|ALL|, \verb|[NOT] IN|, \verb|[NOT] EXISTS|, più tutte gli altri operatori della clausola \verb|WHERE|, seguita dalla \emph{sottoselect}.
-\begin{lstlisting}[
-    language=SQL,
-    showspaces=false,
-    basicstyle=\ttfamily,
-    numbers=left,
-    numberstyle=\tiny,
-    commentstyle=\color{gray}
- ]
-SELECT *
-FROM Studenti
-WHERE voto > (SELECT AVG(voto)
-              FROM Studenti)
-\end{lstlisting}
-
-Oppure è possibile fare operazioni insiemistiche tra i risultati di due \verb|SELECT| tramite gli operatori
-\verb|UNION|, \verb|INTERSECT|, \verb|EXCEPT|.
-
-Ci sono tre tipologie di \emph{subquery}:
-\begin{itemize}
-    \item Subquery \textcolor{purple}{Scalari}: una \verb|SELECT| che restituisce un solo valore.
-    \item Subquery di \textcolor{purple}{Colonna}: restituisce una colonna.
-    \item Subquery di \textcolor{purple}{Tabella}: restituisce una tabella.
-\end{itemize}
-
 \paragraph{\textcolor{purple}{LIKE}} Questo operatore è usato per effettuare dei \emph{pattern matching} con una stringa
 tramite l'uso di due \emph{\textcolor{purple}{wildcard}}:
 \begin{itemize}
@@ -152,4 +126,49 @@ scalare. \emph{SQL} prevede 5 operatori aggregati:
 tabella ma raggruppando i valori per un sottoinsieme di attributi si utilizza la clausola \verb|GROUP BY|, che specifica
 gli attributi su cui fare i raggruppamenti. Le funzioni di aggregazione saranno applicate su ogni gruppo.
 
-\paragraph{\textcolor{purple}{HAVING}} Tramite questa clausola si possono applicare condizioni sui valori aggregati per ogni gruppo. 
+\paragraph{\textcolor{purple}{HAVING}} Tramite questa clausola si possono applicare condizioni sui valori aggregati per ogni gruppo.
+
+\paragraph{\textcolor{purple}{SottoSelect} o \textcolor{purple}{SubQuery}} È possibile innestare una \verb|SELECT| in un'altra, tramite le parole chiave
+\verb|ANY|, \verb|ALL|, \verb|[NOT] IN|, \verb|[NOT] EXISTS|, più tutte gli altri operatori della clausola \verb|WHERE|, seguita dalla \emph{sottoselect}.
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+ ]
+SELECT *
+FROM Studenti
+WHERE voto > (SELECT AVG(voto)
+              FROM Studenti)
+\end{lstlisting}
+
+Oppure è possibile fare operazioni insiemistiche tra i risultati di due \verb|SELECT| tramite gli operatori
+\verb|UNION|, \verb|INTERSECT|, \verb|EXCEPT|.
+
+Ci sono tre tipologie di \emph{subquery}:
+\begin{itemize}
+    \item Subquery \textcolor{purple}{Scalari}: una \verb|SELECT| che restituisce un solo valore.
+    \item Subquery di \textcolor{purple}{Colonna}: restituisce una colonna.
+    \item Subquery di \textcolor{purple}{Tabella}: restituisce una tabella.
+\end{itemize}
+
+Nelle query nidificate le \emph{regole di visibilità} sono simili a quelle dei linguaggi
+di programmazione, ovvero all'esterno non è possibile riferirsi a variabili definite in \emph{query} più interne o nello stesso livello, viceversa sì.
+
+\paragraph{NOTA} Nelle \emph{subquery} non è possibile utilizzare le clausole \verb|HAVING| e \verb|GROUP BY|.
+
+\paragraph{\textcolor{purple}{Quantificazione}} È importante ricordarsi due \emph{"trasformazioni"} molto utili per la quantificazione:
+\begin{itemize}
+    \item L'\textcolor{purple}{universale negata} è uguale all'\textcolor{purple}{esistenziale}: \emph{non tutti i voti sono $\leq$ 24} vale a dire \emph{almeno un voto $>$ 24}.
+    \item L'\textcolor{purple}{esistenziale negata} è uguale all'\textcolor{purple}{universale}: \emph{non esiste un voto diverso da 30} vale a dire \emph{tutti i voti sono uguali a 30}.
+\end{itemize}
+
+Quando si utilizza nel \verb|WHERE |un operatore scalare seguito da \verb|ANY| più una \emph{subquery}, il predicato sarà vero solo se almeno
+uno dei valori restituiti dalla \emph{subquery} lo soddisfa. Mentre se si usa \verb|ALL|, tutti i valori restituiti devono soddisfarlo.
+
+La keyword \verb|EXISTS| invece rappresenta un quantificatore esistenziale, ciò rende vero il predicato se la \emph{subquery}
+che lo segue restituisce almeno una tupla.
+
+È bene notare che utilizzare \verb|IN| equivale alla forma \verb|= ANY|.
