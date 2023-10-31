@@ -1,4 +1,6 @@
 \section{SQL}
+
+\subsection{Query Language}
 Le interrogazioni al database vengono fatte mediante il comando
 \verb|SELECT|, nel quale occorre specificare la lista degli attributi interessati.
 Il comando presenta anche due clausole, \verb|FROM| che indica in quali tabelle
@@ -107,7 +109,7 @@ del risultato della \verb|SELECT|, basandosi sui valori di uno o più attributi 
 indicando in maniera esplicita se l'ordine deve essere crescente (\verb|ASC|, predefinito) o decrescente
 (\verb|DESC|).
 
-\subsection{Operatori Aggregati}
+\subsubsection{Operatori Aggregati}
 
 Nella \emph{target list} possiamo avere anche espressioni che calcolano
 valori a partire da un insieme di ennuple, e che restituiscono un singolo valore
@@ -165,10 +167,215 @@ di programmazione, ovvero all'esterno non è possibile riferirsi a variabili def
     \item L'\textcolor{purple}{esistenziale negata} è uguale all'\textcolor{purple}{universale}: \emph{non esiste un voto diverso da 30} vale a dire \emph{tutti i voti sono uguali a 30}.
 \end{itemize}
 
-Quando si utilizza nel \verb|WHERE |un operatore scalare seguito da \verb|ANY| più una \emph{subquery}, il predicato sarà vero solo se almeno
+Quando si utilizza nel \verb|WHERE| un operatore scalare seguito da \verb|ANY| più una \emph{subquery}, il predicato sarà vero solo se almeno
 uno dei valori restituiti dalla \emph{subquery} lo soddisfa. Mentre se si usa \verb|ALL|, tutti i valori restituiti devono soddisfarlo.
 
 La keyword \verb|EXISTS| invece rappresenta un quantificatore esistenziale, ciò rende vero il predicato se la \emph{subquery}
 che lo segue restituisce almeno una tupla.
 
-È bene notare che utilizzare \verb|IN| equivale alla forma \verb|= ANY|.
+È bene notare che utilizzare \verb|IN| equivale alla forma \verb|=ANY|. \\
+
+Gli operatori definiti di seguito lavorano su tabelle omogenee, quindi definite sullo stesso
+dominio.
+
+\paragraph{\textcolor{purple}{UNION}} L'operatore \verb|UNION| prende come operandi i risultati di
+due \verb|SELECT| e restituisce una terza tabella che contiene l'unione delle righe senza duplicati. Se è scecificata l'opzione
+\verb|ALL| allora si mantengono anche le righe doppie.
+Nella tabella risultante i nomi degli attributi vengono presi da quelli del primo operando.
+
+\paragraph{\textcolor{purple}{EXCEPT}} Questo operatore rappresenta la differenza insiemistica. Quindi si mantengono
+tutte le tuple della prima tabella che non sono presenti anche nella seconda. Anche qui si può utilizzare l'opzione \verb|ALL|.
+
+\paragraph{\textcolor{purple}{INTERSECT}} Questo operatore realizza l'intersezione dell'algebra relazionale, quindi restituisce
+solo le righe comuni alle due tabelle che restituiscono le due \verb|SELECT|. L'opzione \verb|ALL| è disponibile anche per questo operatore.
+
+\subsection{Data Manipulation Language}
+
+Il \emph{DML} è il linguaggio di \emph{SQL} per inserire, modificare e cancellare dati nel database e per interrogarlo.
+
+\paragraph{\textcolor{purple}{INSERT}} Per inserire dati nel database si utilizza la seguente sintassi:
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+ ]
+INSERT INTO Nome_Tabella
+[(Lista_Attributi)] VALUES (Lista_Valori)
+\end{lstlisting}
+
+Le \verb|[]| indicano che specificare la lista degli attributi è opzionale, in caso non è specificata si è obbligati ad assegnare valori a tutti gli attributi
+nell'ordine opportuno. Se a un attributo non viene assegnato alcun valore, viene assegnato automaticamente \verb|NULL|, a meno che sia
+stato specificato in precedenza un valore di \emph{default}. Se invece, \verb|NULL| non è permesso per gli attributi mancanti, l'inserimento fallisce.
+
+È possibile effettuare un inserimento prendendo dati da un'altra tabella in questo modo:
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+ ]
+INSERT INTO Tabella_1(Attributo_1, ..., Attributo_n)
+SELECT Attributo_1, Attributo_n
+FROM Tabella_2
+\end{lstlisting}
+
+\paragraph{\textcolor{purple}{DELETE}} Per cancellare tuple da una tabella si utilizza la seguente sintassi:
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+ ]
+DELETE FROM Tabella
+[WHERE Condizione]
+\end{lstlisting}
+Specificando la clausola \verb|WHERE| si vanno ad eliminare solo le tuple che rispettono quella \emph{Condizione}.
+Nella clausola \verb|WHERE| è possibile utilizzare una \emph{subquery}.
+
+\paragraph{\textcolor{purple}{UPDATE}} Per aggiornare gli attributi di alcune tuple utilizzando il comando \verb|UPDATE|:
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+ ]
+UPDATE Tabella
+SET Nome_Attributo = Espressione
+WHERE Condizione
+\end{lstlisting}
+
+\subsection{Data Definition Language}
+
+Il linguaggio \emph{DDL} permette la creazione, modifica, cancellazione di tabelle,
+domini e degli altri oggetti del database. Il fine è quello di definire lo \emph{schema logico}
+del database.
+
+Per la creazione di tabelle si utilizza il comando \verb|CREATE TABLE|:
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+ ]
+CREATE TABLE Nome_Tabella
+(
+  Nome_Colonna_1, Tipo_1, Clausola_Default_1, Vincolo_1,
+  ...
+  Nome_Colonna_n, Tipo_n, Clausola_Default_n, Vincolo_n,
+  Vincoli_Tabella
+)
+\end{lstlisting}
+
+Questo comando definisce uno schema di relazione e ne crea un'istanza vuota.
+Successivamente a questo comando, la tabella è pronta per l'inserimento.
+
+\paragraph{\textcolor{purple}{DESCRIBE}} Il comando \verb|DESCRIBE| permette di ottenere
+lo schema di una tabella dopo che è stata creata.
+
+Un attributo può avere uno dei seguenti tipi:
+\begin{itemize}
+    \item \textcolor{purple}{CHAR(n)}: stringhe di lunghezza esattamente $n$.
+    \item \textcolor{purple}{VARCHAR(n)}: stringhe di lunghezza al più $n$.
+    \item \textcolor{purple}{INTEGER}: interi di dimensione uguale alla lunghezza della \emph{word}
+        di memoria dell'elaboratore.
+    \item \textcolor{purple}{REAL}: numeri reali di dimensione uguale alla lunghezza della \emph{word}
+    di memoria dell'elaboratore.
+    \item \textcolor{purple}{NUMBER(p, s)}: numeri di $p$ cifre di cui $s$ decimali.
+    \item \textcolor{purple}{FLOAT(p)}: numeri binari in virgola mobile con almeno $p$ cifre significative.
+    \item \textcolor{purple}{DATE}.
+\end{itemize}
+
+\paragraph{\textcolor{purple}{ALTER TABLE}} Con questo comando è possibile modificare lo schema
+di una tabella:
+\begin{itemize}
+    \item \textcolor{purple}{ADD [Nome Attributo]} per aggiungere una nuova colonna. Se non ci sono
+        altre specifiche l'attributo viene aggiunto come ultima colonna, altrimenti con \verb|FIRST| si aggiunge l'attributo
+        come prima colonna, e con \verb|AFTER Nome Attributo| si aggiunge subito dopo quello indicato. 
+    \item \textcolor{purple}{DROP [Nome Attributo]} per eliminare una colonna. Se un'altra tabella presenta un vincolo di integrità
+        referenziale con l'attributo da eliminare, utilizzando la specifica \verb|RESTRICT|, il comando fallisce; altrimenti
+        utilizzando \verb|CASCADE| la colonna viene eliminata, ed anche tutte le dipendenze logiche (vincolo di \emph{foreign key}) che altre tabelle
+        hanno con questo attributo. 
+    \item \textcolor{purple}{MODIFY} per modificare una colonna.
+    \item \textcolor{purple}{SET DEFAULT} per assegnare valori di default agli attributi.
+    \item \textcolor{purple}{DROP DEFAULT} per eliminare l'assegnazione di valori di default.
+         \begin{lstlisting}[
+            language=SQL,
+            showspaces=false,
+            basicstyle=\ttfamily,
+            numbers=left,
+            numberstyle=\tiny,
+            commentstyle=\color{gray}
+        ]
+        ALTER TABLE Tabella
+        ALTER [COLUMN] Colonna
+        SET/DROP DEFAULT
+        \end{lstlisting}
+    \item \textcolor{purple}{ADD CONSTRAINT} per aggiungere vincoli di tabella.
+    \item \textcolor{purple}{DROP CONSTRAINT} per eliminare vincoli di tabella. Anche qui sono presenti
+        le specifiche \verb|RESTRICT| e \verb|CASCADE|. Infatti con \verb|RESTRICT| non è permesso eliminare
+        i vincoli di unicità e di chiave primaria su una colonna se esistono vincoli di chiave esterna che si riferiscono
+        alla stessa colonna.
+\end{itemize}
+
+Se l'attributo da definire presenta il vincolo \verb|NOT NULL|, occorre prima aggiungerlo
+senza il vincolo, poi per ogni tupla della tabella si aggiunge un valore per quell'attributo, ed
+infine si può modificare la tabella impostando quell'attributo come \verb|NOT NULL|.
+
+\paragraph{\textcolor{purple}{DROP TABLE}} Per eliminare una tabella. Utilizzando anche qui \verb|RESTRICT|, l'eliminazione
+è impedita se la tabella è utilizzata nella definizione di altri oggetti. Con \verb|CASCADE|, invece, vengono eliminate anche tutte
+le dipendenze che gli altri oggetti hanno con questa tabella.
+
+\subsubsection{Vincoli}
+
+I vincoli di \emph{\textcolor{purple}{integrità}} consentono di limitare i valori ammissibile
+per un'attributo. Quelli \emph{intrarelazionali} (che non si riferiscono ad altre tabelle) sono:
+\begin{itemize}
+    \item \textcolor{purple}{NOT NULL}.
+    \item \textcolor{purple}{UNIQUE} serve per definire una chiave, e può essere utilizzato sia nella definizione
+        di un attributo, se ne coinvolge solo uno, o per un insieme di attributi, in questo caso viene definito nei vincoli
+        di tabella e si indica la lista di attributi che formano la chiave.
+    \item \textcolor{purple}{PRIMARY KEY} anche qui può essere definito nella definizione di attributo, se ne coinvolge solo una, o nei vincoli di tabella
+        se la chiave primaria è formata da più attributi. Questo vincolo implica sia il vincolo \textcolor{purple}{UNIQUE} sull'insieme di attributi,
+        che il vincolo \textcolor{purple}{NOT NULL} per ogni attributo della chiave primaria.
+    \item \textcolor{purple}{CHECK} è un'espressione booleana, e richiede che un attributo o un insieme di attributi soddisfino una condizione per ogni tupla della tabella.
+\end{itemize}
+
+I vincoli \emph{interrelazionali}, invece, si impostano per mettere in relazione attributi di
+tabelle diverse. Queste relazioni sono importanti per eliminare il più possibile la ridondanza dei dati.
+Per impostare un vincolo di integrità referenziale su un singolo attributo, nella sua descrizione si indica con \verb|REFERENCES Tabella_Riferita(Attributo_Riferito)|.
+Mentre se il vincolo coinvolge più attributi, anche qui bisogna definirlo nei vincoli di tabella con \verb|FOREIGN KEY (Lista_Attributi_Referenti)|
+\verb|REFERENCES Tabella_Riferita(Lista_Attributi_Riferiti)|.
+
+È possibile definire delle politiche di reazione alla violazione quando uno di questi vincoli viene violato medianti i comandi \verb|ON DELETE| e
+\verb|ON UPDATE|. Le azioni per la \verb|ON DELETE| possono essere le seguenti:
+\begin{itemize}
+    \item \textcolor{purple}{NO ACTION}: questa è l'azione di \textbf{default} e blocca la cancellazione
+        delle righe nella tabella riferita.
+    \item \textcolor{purple}{CASCADE}: cancella tutte le righe dipendenti se si riferiscono ad una riga che viene
+        eliminata dalla tabella riferita.
+    \item \textcolor{purple}{SET NULL}: assegna \verb|NULL| ai valori delle colonne con il vincolo di \emph{foreign key},
+        se dipendono da una riga cancellata dalla tabella riferita.
+    \item \textcolor{purple}{SET DEFAULT}: assegna il valore di \emph{default} ai valori delle colonne con il vincolo di \emph{foreign key},
+        se dipendono da una riga cancellata dalla tabella riferita.
+\end{itemize}
+
+Le azioni per \verb|ON UPDATE| sono le stesse ma hanno una semantica diversa:
+\begin{itemize}
+    \item \textcolor{purple}{NO ACTION}: rifiuta gli aggiornamenti che violano l'integrità referenziale.
+    \item \textcolor{purple}{CASCADE}: le righe della tabella referente vengono impostate con i nuovi valori aggiornati della tabella riferita.
+    \item \textcolor{purple}{SET NULL}: i valori della tabella referente sono impostati a \verb|NULL|.
+    \item \textcolor{purple}{SET DEFAULT}: i valori della tabella referente sono impostati al valore di \emph{default}.
+\end{itemize}
+
+\subsubsection{Viste}
