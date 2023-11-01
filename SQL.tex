@@ -379,3 +379,71 @@ Le azioni per \verb|ON UPDATE| sono le stesse ma hanno una semantica diversa:
 \end{itemize}
 
 \subsubsection{Viste}
+
+Le \textbf{\textcolor{purple}{viste}} sono delle tabelle virtuali i cui dati sono
+riaggregazioni dei dati contenuti nelle tabelle fisiche del database.
+Contengono gli stessi dati, ma forniscono una visione diversa e dinamicamente aggiornata.
+
+Permettono di proteggere i database, dato che consentono di limitare l'accesso ai dati, di rappresentare
+i dati in modo più significativo per l'utente, ma non è possibile utilizzare alcuni operatori come 
+\verb|UNION|, \verb|INTERSECT| ed \verb|EXCEPT|, e neanche la clausola \verb|ORDER BY|.
+
+Il vantaggio principale è che garantiscono l'\textbf{\textcolor{purple}{indipendenza logica}} delle
+applicazioni rispetto alla struttura del database, cioè è possibile operare modifiche agli schemi
+nel database senza dover apportare modifiche anche nelle applicazioni che lo usano.
+
+Il comando da utilizzare è il seguente:
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+]
+CREATE VIEW Nome_Vista [(Lista_Attributi)] AS Select
+[with [local | cascaded] check option]
+\end{lstlisting}
+Nella lista attributi si trovano i nomi assegnati alle colonne che corrispondono
+ordinatamente alle colonne selezionate dalla \verb|SELECT|, se sono omesse si utilizzano gli stessi nomi
+usati nella \verb|SELECT|.
+
+\paragraph{Nota Bene} Solo il \emph{contenuto} di una vista è
+\emph{dinamico}, la sua \emph{struttura} non lo è. Se in seguito
+alla creazione della vista, alla tabella (o le tabelle) utilizzata nella \verb|SELECT|
+viene aggiunta una colonna, questa non sarà presente nella vista.
+
+\paragraph{\textcolor{purple}{Vista di Gruppo}} È una vista in cui una delle colonna è una
+funzione di aggregazione, in questo caso è obbligatorio assegnare un nome alla colonna corrispondente
+alla funzione. Sono chiamate \emph{\textcolor{purple}{viste di gruppo}} anche quelle in cui
+la \verb|SELECT| lavora su altre viste di gruppo.
+
+\paragraph{\textcolor{purple}{DROP VIEW}} Per eliminare una vista si usa il comando:
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+]
+DROP VIEW Nome_Vista {RESTRICT / CASCADE}
+\end{lstlisting}
+Con \verb|RESTRICT| la vista viene eliminata solo se non è riferita nella definizione di altri oggetti.
+Con \verb|CASCADE|, invece vengono eliminate anche tutte le dipendenze da tale vista.
+
+Le tabelle delle viste si possono interrogare come le altre, ma in generale non si possono
+modificare, a meno che ci sia una corrispondenza biunivoca fra le righe della tabella e quelle della vista,
+ovvero se nella \verb|SELECT| non sia presente la \verb|DISTINCT| e ci siano solo attributi, nella \verb|FROM|
+ci deve essere una sola tabella modificabile, il \verb|WHERE| deve essere senza \emph{subquery} e non ci devono essere
+\verb|GROUP BY| ed \verb|HAVING|.
+
+L'opzione \verb|with check option| assicura che le operazioni di inserimento e modifica
+dei dati sulla vista soddisfino la clausola \verb|WHERE| nella \verb|SELECT| utilizzata nella
+creazione della vista.
+
+Nel caso in cui si utilizza la specifica \verb|CASCADED| (di \emph{default}), se la vista è definita
+in termini di altre viste, allora il DBMS controlla che la nuova tupla soddisfi sia la clausola \verb|WHERE| della vista
+principale che di quelle di cui è dipendente, indipendemente che quelle viste sono state definiti con l'opzione \verb|with check option|.
+Invece con la specifica \verb|LOCAL| si verifica solo che soddisfi le clausole delle viste di cui la principale è dipendente con l'opzione
+\verb|with check option| abilitata.
