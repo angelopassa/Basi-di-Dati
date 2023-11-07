@@ -447,3 +447,147 @@ in termini di altre viste, allora il DBMS controlla che la nuova tupla soddisfi 
 principale che di quelle di cui è dipendente, indipendemente che quelle viste sono state definiti con l'opzione \verb|with check option|.
 Invece con la specifica \verb|LOCAL| si verifica solo che soddisfi le clausole delle viste di cui la principale è dipendente con l'opzione
 \verb|with check option| abilitata.
+
+\subsubsection{Procedure e Trigger}
+
+Le \textbf{\textcolor{purple}{procedure}} sono delle funzioni che possono
+essere invocate direttamente dall'utente.
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+]
+CREATE FUNCTION <Nome Funzione> IS
+    DECLARE
+        <Nome Variabile 1> <Tipo Variabile 1>;
+        ...
+    BEGIN
+        <Query 1>;
+        ...
+        RETURN(<Nome Variabile>);
+    END
+\end{lstlisting}
+
+I \textbf{\textcolor{purple}{trigger}} invece definiscono un'azione che il
+DBMS deve attivare automaticamente quando si verificano dei determinati \emph{eventi}
+(cioè quando si eseguono specifici comandi). Questi comandi possono essere principalmente
+\emph{DML}, quindi \verb|INSERT|, \verb|UPDATE| e \verb|DELETE|, ed anche i comandi per l'aggiornamento di
+colonne, ma nei DBMS aggiornati si possono utilizzare anche comandi \emph{DDL}.
+
+I \emph{trigger} possono essere eseguiti a livello di riga, quindi imponendo
+la clausola \verb|FOR EACH ROW| il \emph{trigger} verrà eseguito per ogni riga modificata
+dal comando. Mentre se si omette, si parla di trigger a livello di istruzione.
+
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+]
+CREATE TRIGGER <Nome Trigger>
+{BEFORE|AFTER|INSTEAD OF} <Evento 1>, ..., <Evento n>
+ON <Tabella Target>
+[FOR EACH ROW]
+[WHEN <Predicato SQL>]
+<Comando SQL o Procedura>
+\end{lstlisting}
+
+Le clausole \verb|BEFORE| e \verb|AFTER| permettono di specificare
+se le azioni del \emph{trigger} devono essere eseguiti prima o dopo l'esecuzione dei comandi
+indicati negli eventi.
+
+I \emph{trigger} possono essere classificati come \textcolor{purple}{attivi}, se modificano
+lo stato del database, oppure \textcolor{purple}{passivi} se servono solo a provocare il fallimento
+dei comandi che si vogliono eseguire sotto certe condizioni.
+
+Ad esempio con la clausola \verb|INSTEAD OF| si può specificare che
+i comandi che hanno attivato il \emph{trigger} non devono essere eseguiti, e si procederà
+solo ad eseguire le azioni del \emph{trigger}. I \emph{trigger} di tipo \verb|INSTEAD OF|
+devono essere sempre a livello di riga e possono anche essere definiti su \emph{viste}.
+
+I \emph{trigger} sono molto utili per aggiunge vincoli che non sono esprimibili nello schema.
+
+\subsubsection{Controllo degli Accessi}
+
+Ogni risorsa dello schema può essere protetta, il possessore di ogni risorsa
+assegna privilegi agli altri utenti su quella risorsa. Esiste un utente predefinito chiamato
+\emph{\_system} che rappresenta l'amministratore del \emph{DBMS} ed ha accesso a tutte le risorse.
+La sintassi per assegnare privilegi è la seguente:
+
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+]
+GRANT [<Privilegi> | ALL PRIVILEGES]
+ON <Risorsa> TO <Utenti> 
+[WITH GRANT OPTION]
+\end{lstlisting}
+
+I \emph{privilegi} possono essere \verb|SELECT|, \verb|INSERT [(Attributi)]| cioè inserire
+righe con valori non nulli per gli \verb|Attributi|, \verb|DELETE|, \verb|UPDATE [(Attributi)]| cioè
+modificare interamente le righe o solo gli \verb|Attributi| per ogni riga, e \verb|REFERENCES [(Attributi)]| ovvero
+permette di aggiungere vincoli di integrità referenziale sugli \verb|Attributi| in altre tabelle.
+
+L'opzione \verb|WITH GRANT OPTION| permette agli utenti a cui vengono dati i privilegi di trasferirli
+ad altri.
+
+Per revocare un privilegio:
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+]
+REVOKE <Privilegi> ON <Risorsa> FROM <Utenti>
+[RESTRICT | CASCADE]
+\end{lstlisting}
+
+La revoca può essere fatta solo dall'utente che ha assegnato
+direttamente il privilegio, inoltre con l'opzione \verb|RESTRICT| si specifica
+che la revoca non deve essere eseguita se questa comporta qualche altra revoca
+a cascata (nel caso si sia usata l'opzione \verb|WITH GRANT OPTION|); mentre
+con \verb|CASCADE| si forza la revoca.
+
+Ovviamente chi crea la risorsa ha tutti i permessi su di essa, tranne nel caso
+delle \emph{viste}, qui il creatore ha gli stessi permessi che ha sulle tabelle usate
+nella creazione della \emph{vista}.
+
+\subsection{Indici e Metadati}
+
+Gli \textbf{\textcolor{purple}{indici}} permettono di ordinare
+i record di una tabella su uno o più attributi in una struttura,
+in questo modo le ricerche su di essa sono ottimizzate.
+
+\begin{lstlisting}[
+    language=SQL,
+    showspaces=false,
+    basicstyle=\ttfamily,
+    numbers=left,
+    numberstyle=\tiny,
+    commentstyle=\color{gray}
+]
+CREATE INDEX <Nome Indice> ON <Nome Tabella>
+WITH STRUCTURE = BTREE, KEY = (<Attributi>)
+\end{lstlisting}
+
+\paragraph{\textcolor{purple}{Metadati}} Nel database sono presenti
+delle tabelle che contengono metadati:
+\begin{itemize}
+    \item \verb|PASSWORD(username, passowrd)|: tabella delle password.
+    \item \verb|SYSDB(dbname, creator, dbpath, remarks)|: tabella del database.
+    \item \verb|SYSTABLES(name, creator, type, colcount, filename, remarks)|: tabella delle tabelle.
+    \item \verb|SYSCOLUMNS(name, tbname, tbcreator, colno, coltype, lenght, | \\
+        \verb|default, remarks)|: tabella delle colonne.
+    \item \verb|SYSINDEXES(name, tbname, creator, uniquerule, colcount)|: tabella degli indici.
+\end{itemize}
