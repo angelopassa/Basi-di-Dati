@@ -1,1 +1,36 @@
+\newpage
+
 \section{Normalizzazione}
+
+La \emph{teoria della progettazione relazione} studia le anomalie all'interno
+degli schemi relazionali e li elimina tramite un processo di \textbf{\textcolor{purple}{normalizzazione}}.
+
+Le \emph{anomalie} possono essere delle ridondanze o delle potenziali
+inconsistenze quando si effettuano modifiche (anche inserimenti e cancellazioni) nelle istanze.
+
+\begin{definition}[Forma Normale]
+    Una \textbf{\textcolor{purple}{forma normale}} è una proprietà di un
+    database che ne garantisce l'assenza di anomalie.
+\end{definition}
+
+Per seguire una corretta progettazione si fà in modo che non si uniscano in un'unica
+relazione attributi che provengano da più classi e associazioni; si cerca di ridurre
+al minimo la ridondanza; si evita di avere attributi che abbiano frequentemente
+valori nulli; ed infine bisogna fare in modo che le relazioni possano essere riunite
+tramite \verb|JOIN| con condizioni di uguaglianze e su attributi che siano o \emph{chiavi primarie}
+o \emph{chiavi esterne} in modo tale da evitare la generazione di \emph{\textcolor{purple}{tuple spurie}}.
+
+\begin{definition}[Istanza Valida]
+    Un'\textbf{\textcolor{purple}{istanza valida}} su una relazione è un'istanza a cui
+    viene attribuita anche una nozione semantica, e che quindi è semanticamente corretta
+    nel dominio del discorso.
+\end{definition}
+
+\begin{definition}[Dipendenza Funzionale]
+    Dato uno schema $R(T)$ e due sottoinsiemi di attributi $X, Y \subseteq T$, una \textbf{\textcolor{purple}{dipendenza funzionale}}
+    fra gli attributi di $X$ e $Y$ è un vincolo espresso nella forma $X \rightarrow Y$, e sta a significare
+    che gli attributi di $X$ determinano funzionalmente quelli di $Y$ se per ogni \emph{istanza valida} $r$ su $R(T)$ vale che:
+    \begin{equation*}
+        \forall \; t_1, t_2 \in r\;.\;t_1[X] = t_2[X] \Rightarrow t_1[Y] = t_2[Y]
+    \end{equation*}
+\end{definition}
