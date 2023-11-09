@@ -34,3 +34,110 @@ o \emph{chiavi esterne} in modo tale da evitare la generazione di \emph{\textcol
         \forall \; t_1, t_2 \in r\;.\;t_1[X] = t_2[X] \Rightarrow t_1[Y] = t_2[Y]
     \end{equation*}
 \end{definition}
+
+Quando un'istanza $r_0$ soddisfa una \textcolor{purple}{dipendenza funzionale} $X \rightarrow Y$ si denota
+con $r_0 \models X \rightarrow Y$.
+
+\begin{definition}[Dipendenza Funzionale Atomica]
+    Ogni \textcolor{purple}{dipendenza funzionale} $X \rightarrow A_1, A_2, \dots, A_n$
+    si può scomporre nelle \textbf{\textcolor{purple}{dipendenze funzionali atomiche}}
+    $X \rightarrow A_1$, $X \rightarrow A_2$, \dots, $X \rightarrow A_n$.
+\end{definition}
+
+\begin{definition}[Dipendenza Funzionale Non Banale]
+    Una \textcolor{purple}{dipendenza funzionale} del tipo
+    $X \rightarrow A$ si dice \emph{\textbf{\textcolor{purple}{non banale}}}
+    se $A \not\subseteq X$.
+\end{definition}
+
+Le dipendenze funzionali possono essere espresse per:
+\begin{itemize}
+    \item \textcolor{purple}{Espressione Diretta} ($P \Rightarrow Q$): $X_= \Rightarrow Y_=$, cioè
+        se in due righe i valori degli attributi in $X$ sono uguali, allora devono esserlo anche in $Y$.
+    \item \textcolor{purple}{Contrapposizione} ($\neg Q \Rightarrow \neg P$): $Y_{\neq} \Rightarrow X_{\neq}$, cioè
+        se in due righe i valori degli attributi in $Y$ sono diversi, allora devono esserlo anche in $X$.
+    \item \textcolor{purple}{Per Assurdo}: $\neg(X_= \land Y_{\neq})$ o $X_= \land Y_{\neq} \Rightarrow False$, ovvero non
+        ci possono essere due righe con i valori degli attributi in $X$ uguali e in $Y$ diversi.
+\end{itemize}
+
+Questi sono 3 modi per esprimere la stessa dipendenza funzionale.
+
+La notazione $R<T, F>$ indica una relazione $R$ definita su uno schema
+di attributi $T$ e dipendenze funzionali $F$.
+
+\begin{definition}[Dipendenza Funzionale Completa]
+    Una \textcolor{purple}{dipendenza funzionale} $X \rightarrow Y$ si dice \textbf{\emph{\textcolor{purple}{completa}}}
+    quando per ogni $W \subset X$ non vale $W \rightarrow Y$.
+\end{definition}
+
+Se $X$ è una \emph{superchiave} allora $X$ determina ogni altro attributo
+della relazione, quindi $X \rightarrow T$.
+
+Se $X$ è una \emph{chiave} allora $X \rightarrow T$ è una \emph{dipendenza funzionale completa}.
+
+\begin{definition}[Dipendenza Implicata]
+    Sia $F$ un insieme di dipendenze funzionali sullo schema $R(T)$,
+    allora $F$ \emph{\textcolor{purple}{implica logicamente}} $X \rightarrow Y$ ($F \models X \rightarrow Y$),
+    se ogni istanza di relazione $r$ su $R(T)$ che soddisfa tutte le dipendenze funzionali
+    in $F$, soddisfa anche $X \rightarrow Y$.
+\end{definition}
+
+\paragraph{\textcolor{purple}{Regole di Inferenza} o \textcolor{purple}{Assiomi di Armstrong}}
+\begin{itemize}
+    \item \textcolor{purple}{Riflessività}: $Y \subseteq X \Rightarrow X \rightarrow Y$.
+    \item \textcolor{purple}{Arricchimento}: $X \rightarrow Y \land Z \subseteq T \Rightarrow XZ \rightarrow YZ$.
+    \item \textcolor{purple}{Transitività}: $X \rightarrow Y \land Y \rightarrow Z \Rightarrow X \rightarrow Z$.
+\end{itemize}
+
+\begin{definition}[Derivazione]
+    Dato $F$ un insieme di \emph{dipendenze funzionali}, si dice
+    che $X \rightarrow Y$ è \emph{\textcolor{purple}{derivabile}} da
+    $F$ (con la notazione $F \vdash X \rightarrow Y$) se $X \rightarrow Y$ può
+    essere inferito da $F$ utilizzando gli \emph{Assiomi di Armstrong}.
+
+    Una \textbf{\textcolor{purple}{derivazione}} della dipendenza funzionale $f$ a partire
+    da $F$ è una sequenza finita di dipendenze $f_1, \dots, f_m$, dove $f_m = f$ ed
+    ogni $f_i$ è o un elemento di $F$ oppure è ottenuta dalle precedenti
+    $f_1, \dots, f_{n-1}$ dipendenze della derivazione applicando ad una di esse una regola di inferenza.
+\end{definition}
+
+Usando la \emph{\textcolor{purple}{derivazione}} si dimostrano le seguenti regole:
+\begin{itemize}
+    \item \textcolor{purple}{Unione}: $\{X \rightarrow Y, X \rightarrow Z\} \vdash X \rightarrow YZ$.
+    \item \textcolor{purple}{Decomposizione}: Dato $Z \subseteq Y$, allora $\{X \rightarrow Y\} \vdash X \rightarrow Z$.
+\end{itemize}
+
+\begin{theorem}[Completezza e Correttezza degli Assiomi di Armstrong]
+    Gli \emph{Assiomi di Armstrong} sono \emph{\textcolor{purple}{corretti}}
+    e \emph{\textcolor{purple}{completi}}. Ovvero vale la seguente equivalenza
+    $\models\;\;\equiv\;\;\vdash$:
+    \begin{itemize}
+        \item \textcolor{purple}{Correttezza}: $\forall\;f,\;F \vdash f \Rightarrow F \models f$.
+        \item \textcolor{purple}{Completezza}: $\forall\;f,\;F \models f \Rightarrow F \vdash f$.
+    \end{itemize}
+\end{theorem}
+
+\begin{definition}[Chiusura di $F$]
+    Dato un insieme $F$ di dipendenze funzionali, la \textbf{\textcolor{purple}{chiusura}} di
+    $F$ denotata con \textbf{\textcolor{purple}{$F^+$}} è:
+    \begin{equation*}
+        F^+ = \{X \rightarrow Y \;|\; F \vdash X \rightarrow Y\}
+    \end{equation*}
+\end{definition}
+
+\paragraph{\textcolor{purple}{Problema dell'Implicazione}} Consiste nel decidere se una \emph{dipendenza funzionale}
+$X \rightarrow Y$ appartiene o no ad $F^+$. Applicando un algoritmo banale, si genera $F^+$ applicando ad $F$
+gli \emph{Assiomi di Armstrong}, ma questo ha ovviamente un ordine di complessità esponenziale.
+
+\begin{definition}[Chiusura di $X$ rispetto ad $F$]
+    Dato $R<T, F>$ e un sottoinsiemi di attributi $X \subseteq T$, la
+    \textbf{\textcolor{purple}{chiusura di $X$ rispetto ad $F$}} denotata con
+    \textbf{\textcolor{purple}{$X_{F}^{+}$}} è l'insieme:
+    \begin{equation*}
+        X_{F}^{+} = \{A_i \in T \;|\; F \vdash X \rightarrow A_i\}
+    \end{equation*}
+\end{definition}
+
+\begin{theorem}
+    $F \vdash X \rightarrow Y \Leftrightarrow Y \subseteq X_{F}^{+}$
+\end{theorem}
