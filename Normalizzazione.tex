@@ -2,7 +2,7 @@
 
 \section{Normalizzazione}
 
-La \emph{teoria della progettazione relazione} studia le anomalie all'interno
+La \emph{teoria della progettazione relazionale} studia le anomalie all'interno
 degli schemi relazionali e li elimina tramite un processo di \textbf{\textcolor{purple}{normalizzazione}}.
 
 Le \emph{anomalie} possono essere delle ridondanze o delle potenziali
@@ -141,3 +141,145 @@ gli \emph{Assiomi di Armstrong}, ma questo ha ovviamente un ordine di complessit
 \begin{theorem}
     $F \vdash X \rightarrow Y \Leftrightarrow Y \subseteq X_{F}^{+}$
 \end{theorem}
+
+\paragraph{\textcolor{purple}{Algoritmo per Calcolare $X_{F}^+$}}
+Si parte da un insieme di attributi $X$ e da un insieme di dipendenze $F$:
+\begin{enumerate}
+    \item Si inizializza $X^+$ con l'insieme $X$, dato che per la \emph{riflessività}
+        vale che $X \rightarrow X$ indipendentemente da $F$.
+    \item Poi, se fra le dipendenze di $F$ c'è una dipendenza $Y \rightarrow A$ con
+        $Y \subseteq X^+$ allora si inserisce $A$ in $X^+$ ($X^+ = X^+ \cup {A}$). Questo
+        vale dato che se se $Y \subseteq X^+$ allora $Y$ si può derivare funzionalmente da $F$ e
+        per \emph{transitività} si arriva a $Y \rightarrow A$.
+    \item Si ripete il secondo passo finchè non ci sono altri attributi da aggiungere a $X^+$, quindi abbiamo
+        la certezza che l'algoritmo termini dato che la cardinalità di $X$ è finita.
+    \item Alla fine $X_{F}^+ = X^+$.
+\end{enumerate}
+
+\begin{definition}[Chiave Candidata]
+    Dato una relazione definita su $R<T, F>$ si dice che un insieme
+    di attributi $W \subseteq T$ è una \textbf{\textcolor{purple}{chiave candidata}}
+    della relazione se:
+    \begin{itemize}
+        \item $W \rightarrow T \in F^+$, ovvero $W$ è una \emph{\textcolor{purple}{superchiave}}.
+        \item $\forall \; V \subset W, \; V \rightarrow T \not\in F^+$, ovvero se $V$ è contenuto
+            in $W$ allora $V$ non deve essere una superchiave.
+    \end{itemize}
+\end{definition}
+
+\begin{definition}[Attributo Primo]
+    Un \textbf{\textcolor{purple}{attributo primo}} è un attributo che appartiene
+    ad almeno una chiave.
+\end{definition}
+
+\begin{definition}[Copertura]
+    Due insiemi di \emph{dipendenze funzionali} sono \textbf{\textcolor{purple}{equivalenti}}
+    ovvero $F \equiv G$, se e solo se $F^+ = G^+$. Si dice anche che $F$ è
+    una \textbf{\textcolor{purple}{copertura}} di $G$ e viceversa.
+\end{definition}
+
+\begin{definition}[Attributo Estraneo]
+    Dato un insieme di dipendenze funzionali $F$ una dipendenza funzionale
+    $X \rightarrow Y \in F$, si dice che $X$ contiene un \textbf{\textcolor{purple}{attributo estraneo}}
+    $A_i$ se e solo se:
+    \begin{equation*}
+        (X - \{A_i\} \rightarrow Y \in F^+)
+    \end{equation*}
+    Ovvero $F \vdash (X - \{A_i\}) \rightarrow Y$. Per verificare che $A_i$ è estraneo
+    basta calcolare $(X - \{A_i\})^+$ e verificare che includa $Y$.
+
+    In questo caso l'insieme $F$ può essere riscritto eliminando $X \rightarrow Y$ e sostituendolo
+    con $(X - \{A_i\}) \rightarrow Y$.
+\end{definition}
+
+\begin{definition}[Dipendenza Ridondante]
+    Dato un insieme di dipendenze funzionali $F$, si dice $X \rightarrow Y$ è una \textbf{\textcolor{purple}{dipendenza ridondante}}
+    se e solo se:
+    \begin{equation*}
+        (F - \{X \rightarrow Y\})^+ = F^+
+    \end{equation*}
+    che equivale a dire che $F - \{X \rightarrow Y\} \vdash X \rightarrow Y$. Per verificare che $X \rightarrow A$ è
+    ridondante, la si elimina da $F$ e si calcola $X^+$, se include $A$ allora la dipendenza è ridondante.
+\end{definition}
+
+\begin{definition}[Copertura Canonica]
+    Un insieme di dipendenze funzionali $F$ è detto una \textbf{\textcolor{purple}{copertura canonica}} se e solo se:
+    \begin{itemize}
+        \item La parte destra di ogni dipendenza funzionale in $F$ è un singolo attributo.
+        \item Non esistono \emph{attributi estranei}.
+        \item Non esistono \emph{dipendenze ridondanti}.
+    \end{itemize}
+\end{definition}
+
+\begin{theorem}
+    Per ogni insieme $F$ esiste una sua \emph{copertura canonica}.
+\end{theorem}
+
+\paragraph{\textcolor{purple}{Ridondanze}} Le \emph{\textcolor{purple}{ridondanze}} possono essere di due tipi:
+\begin{itemize}
+    \item \textcolor{purple}{Concettuale}: nel database sono memorizzate informazioni che possono essere ricavate
+        da altre già presenti.
+    \item \textcolor{purple}{Logica}: esistono duplicazioni sui dati che possono generare anomalie, come visto fin qui.
+\end{itemize}
+
+\subsection{Decomposizione di Schemi}
+
+In linea generale, per eliminare delle \emph{anomalie} da uno schema occorre decomporlo in schemi più piccoli ma che
+siano equivalenti. L'intuizione è quella di creare uno schema per ogni insieme di dipendenze funzionali che hanno la parte
+a sinistra uguale e che rappresenti una chiave. Ma questa è una soluzione che non può funzionare sempre.
+
+\begin{definition}[Decomposizione]
+    Data una relazione definita su $R(T)$, $\rho = \{R_1(T_1), \dots, R_k(T_k)\}$ è una
+    \textbf{\textcolor{purple}{decomposizione}} di $R$ se e solo se $\cup \; T_i = T$.
+    Due proprietà che è desiderabile avere in una \emph{decomposizione} sono:
+    \begin{itemize}
+        \item La \emph{\textcolor{purple}{conservazione dei dati}}, intesa come \emph{nozione semantica}.
+        \item E la \emph{\textcolor{purple}{conservazione delle dipendenze}}.
+    \end{itemize}
+\end{definition}
+
+\begin{definition}[Decomposizione che Preserva i Dati]
+    Data una \emph{decomposizione} $\rho = \{R_1(T_1), \dots, R_k(T_k)\}$ su $R(T)$, si dice
+    che \emph{\textcolor{purple}{preserva i dati}} se e solo se per ogni \emph{istanza valida} $r$ su $R$:
+    \begin{equation*}
+        r = (\pi_{T_1}(r)) \vee (\pi_{T_2}(r)) \vee \dots \vee (\pi_{T_k}(r))
+    \end{equation*}
+    dove $\vee$ è l'operatore di \emph{natural join}. È importante sottolineare la presenza
+    del simbolo $=$ nell'espressione e non $\subseteq$, dato che non vogliamo la produzione di \emph{ennuple spurie}.
+\end{definition}
+
+\begin{theorem}[Decomposizioni Binarie]
+    Sia $R<T, F>$ uno schema di relazione, la \emph{decomposizione}
+    $\rho = \{R_1(T_1), R_1(T_2)\}$ \emph{\textcolor{purple}{preserva i dati}}
+    se e solo se:
+    \begin{equation*}
+        (T_1 \cap T_2 \rightarrow T_1) \in F^+
+    \end{equation*}
+    oppure
+    \begin{equation*}
+        (T_1 \cap T_2 \rightarrow T_2) \in F^+
+    \end{equation*}
+    Ciò significa che l'insieme degli attributi comuni alle due relazioni deve essere chiave
+    per almeno una delle due.
+\end{theorem}
+
+\begin{proof}[Dimostrazione]
+    Si prende un'istanza di relazione $r$ sugli attributi $ABC$ e si considerano
+    le sue proiezioni $r_1$ su $AB$ e $r_2$ su $AC$.
+    Si suppone che $A$ è chiave per $r$ su $AC$ (la dimostrazione è simmetrica per $AB$) e
+    che quindi $r$ soddisfi la dipendenza funzionale $A \rightarrow C$. Quindi sulla
+    proiezione $AC$ non ci sono tuple diverse quando in $A$ ci sono valori uguali.
+    Se $t = (a,b,c)$ è una tupla del \verb|JOIN| tra $r_1$ e $r_2$ si mostra che appartiene
+    sicuramente ad $r$: $t$ sarà ottenuta dal \verb|JOIN| tra $t_1 = (a,b)$ di $r_1$
+    e $t_2 = (a,c)$ di $r_2$. Quindi per definizione di proiezione in $r$ esisteranno al più due tuple
+    $t_{1}^{'} = (a,b,*)$ e $t_{2}^{'} = (a,*,c)$, dove $*$ rappresenta un valore non noto.
+    Poichè $A \rightarrow C$, allora esiste un unico valore di $C$ associato allo stesso valore di $A$;
+    dato che $t_1$ e $t_{1}^{'}$ hanno lo stesso valore di $A$, il valore non noto $*$ in $t_{1}^{'}$
+    deve essere obbligatoriamente $c$. Quindi $t = t_{1}^{'}$.
+\end{proof}
+
+Anche se una decomposizione è senza perdita può comunque presentare problemi di \emph{\textcolor{purple}{conservazione delle dipendenze}}.
+Si dice che una \emph{decomposizione conserva le dipendenze} se ciascuna delle dipendenze funzionali dello schema originario
+coinvolge attributi che compaiono tutti insieme in uno degli schemi decomposti.
+Altrimenti, una soluzione è di utilizzare query $SQL$ di verifica (ad esempio facendo uso di \emph{trigger}) per
+far in modo che le dipendenze vengano soddisfatte lo stesso.
