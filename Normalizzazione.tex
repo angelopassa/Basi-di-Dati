@@ -283,3 +283,116 @@ Si dice che una \emph{decomposizione conserva le dipendenze} se ciascuna delle d
 coinvolge attributi che compaiono tutti insieme in uno degli schemi decomposti.
 Altrimenti, una soluzione è di utilizzare query $SQL$ di verifica (ad esempio facendo uso di \emph{trigger}) per
 far in modo che le dipendenze vengano soddisfatte lo stesso.
+
+\begin{definition}[Proiezione]
+    Dato lo schema $R<T,F>$ e un sottoinsieme di attributi $T_1 \subseteq T$,
+    la \textbf{\textcolor{purple}{proiezione}} di $F$ su $T_1$ è:
+    \begin{equation*}
+        \pi_{T_1}(F) = \{X \rightarrow Y \in F^+ \;|\; XY \subseteq T_1\}
+    \end{equation*}
+\end{definition}
+
+\paragraph{\textcolor{purple}{Algoritmo per Calcolare $\pi_{T_1}(F)$}}
+L'algoritmo è il seguente:
+\begin{algorithm}
+    \begin{algorithmic}
+        \ForAll{$Y \subseteq T_1$}
+            \State $Z \gets Y^+$
+            \State \textbf{output} $Y \rightarrow Z \cap T_1$
+        \EndFor
+    \end{algorithmic}
+\end{algorithm}
+
+\begin{definition}[Decomposizione che Preserva le Dipendenze]
+    Dato uno schema $R<T,F>$, la decomposizione $\rho = \{R_1, \dots, R_n\}$
+    \emph{\textcolor{purple}{preserva le dipendenze}} se e solo se l'unione delle
+    dipendenze in $\pi_{T_i}(F)$ è una \textbf{\textcolor{purple}{copertura}} di $F$.
+
+    Il problema di stabilire se una decomposizione preserva o no le dipendenze ha tempo polinomiale.
+\end{definition}
+
+\begin{theorem}
+    Sia $\rho = {R_i<T_i, F_i>}$ una decomposizione di $R<T, F>$ che preserva
+    le dipendenze e tale che per qualche $j$, $T_j$ è una superchiave per $R<T,F>$.
+
+    Allora $\rho$ preserva anche i \textbf{\textcolor{purple}{dati}}.
+\end{theorem}
+
+Una \textcolor{purple}{decomposizione} dovrebbe sempre essere \emph{\textcolor{purple}{senza perdita}},
+quindi in grado di ricostruire tutte le tuple originarie senza generare tuple spurie; e deve \emph{\textcolor{purple}{conservare le dipendenze}},
+in modo da garantire i vincoli di integrità (rappresentate dalle dipendenze funzionali).
+
+\subsection{Forme Normali}
+
+\begin{definition}[Forma Normale]
+    Una \textbf{\textcolor{purple}{forma normale}} è una proprietà di un database relazionale che
+    ne garantisce l'assenza di \emph{ridondanze} e di comportamenti non deriderabili in fase di aggiornamento.
+    
+    La prima forma normale \textbf{\textcolor{purple}{1FN}} impone restrizioni sul tipo degli attributi, ovvero ogni attributo
+    deve avere un tipo \emph{\textcolor{purple}{elementare}}. Mentre
+    la \textbf{\textcolor{purple}{2FN}}, \textbf{\textcolor{purple}{3FN}} e la
+    \textbf{\textcolor{purple}{FNBC}} (\emph{Boyce-Codd}, che è la più restrittiva) impongono
+    restrizioni sulle dipendenze.
+\end{definition}
+
+\subsubsection{BCNF - Forma Normale di Boyce e Cood}
+
+\begin{definition}[BCNF]
+    Un'istanza di relazione $r$ definita su $R<T,F>$ è in \textbf{\textcolor{purple}{BCNF}}
+    se e solo se per ogni dipendenza funzionale \emph{non banale} $X \rightarrow Y \in F^+$, $X$
+    contiene una \textbf{chiave} $K$ di $r$, ovvero se $X$ è una \emph{superchiave}.
+
+    Infatti se esistesse una dipendenza $X \rightarrow Y$ non banale in cui
+    $X$ non è superchiave, vuol dire che $X$ modella un'entità diversa
+    da quella modellata da $R$, e che quindi è possibile decomporre $R$.
+\end{definition}
+
+\paragraph{\textcolor{purple}{Algoritmo di Analisi}} Questo algoritmo riceve in
+input uno schema $R<T,F>$ con $F$ che è una \emph{copertura canonica} e dà in output
+una \emph{decomposizione in BCNF} che \emph{preserva i dati} ma non necessariamente le
+dipendenze. L'algoritmo è il seguente e la sua complessità è esponenziale:
+
+\begin{algorithm}
+    \begin{algorithmic}
+        \State $\rho \gets \{R<T,F>\}$
+        \While{Esiste in $\rho$ una $R_i<T_i,F_i>$ non in BCNF per la DF $X \rightarrow Y$}
+            \State $T_a \gets X^+$
+            \State $F_a \gets \pi_{T_a}(F_i)$
+            \State $T_b \gets T_i - X^+ + X$
+            \State $F_b \gets \pi_{T_b}(F_i)$
+            \State $\rho \gets \rho - R_i + \{R_a<T_a,F_a>, R_b<T_b,F_b>\}$
+        \EndWhile
+    \end{algorithmic}
+\end{algorithm}
+
+\subsubsection{3NF}
+
+\begin{definition}[3NF]
+    Un'istanza di relazione $r$ definita su $R<T,F>$ è in \textbf{\textcolor{purple}{3NF}}
+    se e solo se per ogni dipendenza funzionale \emph{non banale} $X \rightarrow Y \in F^+$, $X$
+    contiene una \textbf{chiave} $K$ di $r$, oppure ogni attributo in $Y$ è contenuto in almeno una
+    \textbf{chiave} $K$ di $r$. Quindi se $X$ è una \emph{superchiave} oppure
+    se $Y$ è \emph{primo}.
+\end{definition}
+
+La \textbf{3FN} è meno restrittiva della \textbf{FNBC}, dato che tollera alcune ridondanze ed anomaile sui dati,
+quindi certifica uno schema di qualità inferiore. Il vantaggio, però, è che la \textbf{3FN} è sempre
+ottenibile qualunque sia lo schema di partenza.
+
+\paragraph{\textcolor{purple}{Algoritmo di Sintesi}} L'algoritmo prende in
+input un insieme $T$ di attributi e un insieme $F$ di dipendenze su $T$. Come
+output dà una decomposizione $\rho = \{S_i\}_{i = 1, \dots, n}$ di $T$ tale
+che vengano preservati dati e dipendenze e che ogni $S_i$ sia in \textbf{3BF} rispetto
+alle proiezioni di $F$ su $S_i$. L'algoritmo è il seguente:
+\begin{enumerate}
+    \item Si trova una \emph{copertura canonica} $G$ di $F$ e si pone
+        $\rho = \{\}$.
+    \item Si sostituisce in $G$ ogni insieme di dipendenze con lo stesso determinante
+        $X$ ($X \rightarrow A_1, \dots, X \rightarrow A_h$) con la dipendenza $X \rightarrow A_1, \dots, A_h$.
+    \item Per ogni dipendenza $X \rightarrow Y$ in $G$ si aggiunge in $\rho$ uno schema
+        con attributi $XY$. $X$ diventa la \emph{chiave} della relazione.
+    \item Si elimina ogni schema di $\rho$ che è contenuto in un qualche altro schema.
+    \item Se la decomposizione non contiene neanche uno schema i cui attributi costituiscono
+        una superchiave per $R$, allora si aggiunge a $\rho$ uno schema con attributi $W$,
+        dove $W$ è una chiave di $R$.
+\end{enumerate}
