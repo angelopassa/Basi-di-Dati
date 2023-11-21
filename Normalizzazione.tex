@@ -202,6 +202,15 @@ Si parte da un insieme di attributi $X$ e da un insieme di dipendenze $F$:
     ridondante, la si elimina da $F$ e si calcola $X^+$, se include $A$ allora la dipendenza è ridondante.
 \end{definition}
 
+\paragraph{\textcolor{purple}{Algoritmo Per Trovare Le Chiavi}} Ci si basa su due proprietà, se un attributo $A$ non
+appare a destra di nessuna dipendenza funzionale $F$ allora $A$ appartiene
+ad ogni chiave della relazione; invece se un attributo $B$ appare solo a destra in tutte
+le dipendenze funzionali in cui è coinvolto, allora $B$ non appartiene ad alcune chiave.
+
+Detto ciò, si parte dall'insieme di attributi che è presente solo a sinistra delle dipendenze
+e si calcola la chiusura, se è chiave si termina, altrimenti si aggiunge iterativamente un nuovo attributo
+all'insieme e si prova a calcolare la chiusura (ovviamente non un attributo che appare solo a destra delle dipendenze).
+
 \begin{definition}[Copertura Canonica]
     Un insieme di dipendenze funzionali $F$ è detto una \textbf{\textcolor{purple}{copertura canonica}} se e solo se:
     \begin{itemize}
@@ -382,7 +391,7 @@ ottenibile qualunque sia lo schema di partenza.
 \paragraph{\textcolor{purple}{Algoritmo di Sintesi}} L'algoritmo prende in
 input un insieme $T$ di attributi e un insieme $F$ di dipendenze su $T$. Come
 output dà una decomposizione $\rho = \{S_i\}_{i = 1, \dots, n}$ di $T$ tale
-che vengano preservati dati e dipendenze e che ogni $S_i$ sia in \textbf{3BF} rispetto
+che vengano preservati dati e dipendenze e che ogni $S_i$ sia in \textbf{3FN} rispetto
 alle proiezioni di $F$ su $S_i$. L'algoritmo è il seguente:
 \begin{enumerate}
     \item Si trova una \emph{copertura canonica} $G$ di $F$ e si pone
