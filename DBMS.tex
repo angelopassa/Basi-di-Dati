@@ -201,3 +201,144 @@ Gli indici si possono anche distinguere in:
         campo che non è chiave ma è chiave candidata, quindi ha valori univoci, oppure su un campo
         che ha valori duplicati. In questo caso il primo campo della coppia è chiamato campo di indicizzazione.
 \end{itemize}
+
+\subsection{Ordinamento}
+
+L'ordinamento delle tabelle è importante non solo per ottenere
+il risultato di un \verb|ORDER BY|, ma anche in altre operazioni relazionali
+come la \verb|JOIN| e la \verb|GROUP BY| per ottimizzare i tempi.
+
+L'algoritmo più usato dai \emph{DBMS} è il \textbf{\textcolor{purple}{Merge Sort a Z vie}},
+dove a \emph{Z vie} indica che l'operazione di merge viene eseguita su \emph{Z} pagine alla volta.
+Se si suppone di avere un file di $NP$ pagine e di avere un numero di
+buffer $NB < NP$ in memoria centrale; l'algoritmo opera in due step:
+\begin{itemize}
+    \item Prima esegue un sort interno, utilizzando ad esempio il \emph{Quicksort}, in cui all'interno di ogni pagina
+        i record vengono ordinati, le pagine ordinate vengono chiamate \emph{\textcolor{purple}{run}}.
+    \item Infine, operando uno o più passi di fusione, in base al numero di vie usate, le \emph{run} vengono fuse fino a produrne una sola.
+\end{itemize}
+
+Supponendo di avere a diposizione $NB = 3$ buffer, dove due sono quelli
+di input e uno è quello di output, e di considerare nel calcolo della complessità
+solo il numero di operazioni \emph{I/O} effettuate tra memoria centrale e fisica.
+
+Nella fase di sort interno, si scriverà ogni pagina in uno dei buffer di input
+e poi si riscriverà ordinata in quello di output, impiegando un numero di operazioni uguale
+a $2 \cdot NP$. Ad ogni passo di merge in totale si leggeranno e scriveranno
+sempre $2 \cdot NP$ pagine (i record bisogna visitarli sempre tutti), e il numero di passi di merge sarà $\lceil \log_{2}NP \rceil$ in quanto
+ad ogni passo il numero di \emph{run} si dimezza. Il costo totale è quindi
+pari a $2 \cdot NP \cdot (\lceil \log_{2}NP \rceil + 1)$.
+
+Si può osservare che avendo a disposizione $NB$ buffer si possono ordinare $NP$ pagine
+alla volta nella fase di sort interno anzichè una sola, il che porta ad un costo di $2 \cdot NP \cdot (\lceil \log_{2}{\frac{NP}{NB}} \rceil + 1)$.
+
+Inoltre se abbiamo $NB > 3$ buffer si possono fondere $NB - 1$ run alla volta (1 buffer è per l'output).
+In questo caso il costo è $2 \cdot NP \cdot (\lceil \log_{NB - 1}{\frac{NP}{NB}} \rceil + 1)$.
+
+\subsubsection{JOIN}
+
+Il costo di una \verb|JOIN| può essere molto elevato, dato che il prodotto
+cartesiano tra due tabelle è molto grande, e questo seguito da una restrizione
+può risultare inefficiente. Inoltre, anche se \verb|JOIN| è commutativo, la scelta
+tra l'operatore da posizionare a sinistra e tra quello da posizionare a destra è cruciale
+dal punto di vista dell'ottimizzazione computazionale.
+
+Esistono 4 algoritmi per l'implementazione del \verb|JOIN|, chiameremo con $R$ la relazione a sinistra
+(anche detta esterna), e con $S$ la relazione a destra (interna):
+\begin{itemize}
+    \item \textcolor{purple}{Nested Loops}: qui il costo dipende dallo spazio
+        a disposizione in memoria centrale, nel caso si ha solo un buffer per $R$ e uno
+        per $S$, bisogna caricare ogni pagina di $R$ e per ogni record della pagina
+        si carica ogni volta una pagina di $S$, quindi il numero di operazioni di \emph{I/O}
+        diventa $NPage(R) + NRec(R) \cdot NPag(S)$. Nel caso è possibile allocare
+        un numero di buffer per $S$ uguale a $NPag(S)$, il costo diventa $NPag(R) + NPag(S)$.
+        La prima formula si può anche riscrivere in questo modo:
+        \begin{equation*}
+            NPag(R) \cdot \frac{NRec(R)}{NPag(R)} \cdot NPag(S)
+        \end{equation*}
+        che equivale a dire che per ogni pagina di $R$, scriviamo nel
+        buffer di $S$ tutte le sue pagine tante volte quanti sono i record
+        per ogni pagina di $R$. È semanticamente la stessa cosa.
+        Dato che l'unico fattore che può cambiare in base a se si sceglie
+        $R$ o $S$ a sinistra è $\frac{NRec(X)}{NPag(X)}$, si prende $R$
+        a sinistra se $\frac{NRec(R)}{NPag(R)} < \frac{NRec(S)}{NPag(S)}$,
+        altrimenti si prende $S$. Ciò sta a significare che in $R$, per ogni pagina
+        ci sono meno record, e che quindi le tuple di $R$ sono più grandi di quelle di
+        $S$.
+    \item \textcolor{purple}{Page Nested Loops}: questa può essere vista come una
+        variante del \emph{Nested Loops}, in quanto quando carichiamo nel buffer di $R$
+        una sua pagina poi non si vanno a prendere tutte le pagine di $S$ tante volte
+        quante sono i record della pagina di $R$, ma, quando si carica la pagina di $S$
+        si esegue il \emph{JOIN} di ogni record nel buffer di $R$ con ogni record del buffer
+        di $S$. L'unico compromesso è che nella tabella risultante, non viene
+        preseservato l'ordine della relazione esterna. Il costo qui è $NPage(R) + NPage(R) \cdot NPage(S)$.
+    \item \textcolor{purple}{Index Nested Loops}: in questo caso la scansione completa di $S$ viene
+        sostituita da una scansione basata su un \emph{indice} costruito sugli attributi utilizzati per la \verb|JOIN|.
+    \item \textcolor{purple}{Merge-Sort}: questo algortimo è applicabile quando entrambe le tabelle
+        sono ordinate sugli attributi di \verb|JOIN|. La logica dell'algortimo sfrutta il fatto che entrambi
+        gli input sono ordinati, in questo modo vengono evitati confronti inutili ed il costo diventa
+        $NPag(R) + NPag(S)$.
+\end{itemize}
+
+\subsection{Piani di Accesso}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.35]{img/piani_accesso.png}
+\end{figure}
+
+L'\emph{ottimizzatore} sceglie, in base al comando \emph{SQL}, il piano d'accesso
+dal costo minimo, usando le statistiche presenti nel \emph{catalogo}. Nel processo di ottimizzazione,
+dati il comando \emph{SQL} e il catalogo, viene prima effettuata una procedura di analisi lessicale e semantica, e di
+semplificazione del comando, questa fase dà in output un albero di operatori logici dell'algebra relazionale,
+sul quale si esegue una trasformazione utilizzando delle regole di equivalenza. Successivamente si applica
+un'ottimizzazione fisica dove gli operatori logici sono trasformati in operatori
+fisici e la loro scelta definisce il piano d'accesso. In quest'albero, le foglie sono le tabelle
+e i nodi interni specificano le modalità con cui gli accessi e le operazioni relazionali sono effettuate.
+
+\begin{definition}[Piano d'Accesso]
+    Scelta dell'algoritmo per eseguire ogni operatore.
+\end{definition}
+
+Infatti ogni operatore logico può essere realizzato mediante più algoritmi
+che rappresentano gli operatori fisici.
+
+Ogni operatore fisico è un'\textcolor{purple}{\emph{iteratore}}, ovvero un oggetto con i seguenti metodi (realizzati dalla macchina fisica):
+\begin{itemize}
+    \item \verb|open()|: inizializza lo stato dell'operatore allocando i buffer per gli input e gli output,
+        inoltre richiama ricorsivamente la \verb|open()| sugli operatori figli e passa anche i parametri.
+    \item \verb|next()|: ritorna la prossima tupla del risultato, include anche la \verb|next()| sui figli.
+    \item \verb|isDone()|: indica se ci sono ancora tuple da leggere.
+    \item \verb|reset()|.
+    \item \verb|close()|: termina l'esecuzione dell'operatore e rilascia le risorse ad esso allocate.
+\end{itemize}
+
+Ecco una lista di operatori logici ed i corrispondenti fisici:
+\begin{itemize}
+    \item \textbf{\textcolor{purple}{R}}:
+        \begin{itemize}
+            \item \textcolor{purple}{TableScan(R)}: per la scansione della relazione $R$.
+            \item \textcolor{purple}{IndexScan(R, Idx)}: scansione di $R$ utilizzando l'indice $Idx$.
+            \item \textcolor{purple}{SortScan(R, $\{A_i\}$)}: scansione di $R$ ordinata sull'insieme $\{A_i\}$.
+        \end{itemize}
+    \item \textbf{\textcolor{purple}{$\pi_{A_i}$}}:
+        \begin{itemize}
+            \item \textcolor{purple}{Project(O, $\{A_i\}$)}: per la proiezione dei record di $O$ senza eliminare i duplicati.
+            \item \textcolor{purple}{Distinct(O)}: per eliminare i duplicati dei record ordinati di $O$.
+        \end{itemize}
+    \item \textbf{\textcolor{purple}{$\sigma_{\Psi}$}}:
+        \begin{itemize}
+            \item \textcolor{purple}{Filter(O, $\Psi$)}: per la restrizione dei record di $O$ senza indici.
+            \item \textcolor{purple}{IndexFilter(R, Idx, $\Psi$)}: per la restrizione con indice dei record di $R$.
+        \end{itemize}
+    \item \textbf{\textcolor{purple}{$\tau{\{A_i\}}$}}:
+        \begin{itemize}
+            \item \textcolor{purple}{Sort(O, $\{A_i\}$)}: per ordinare i record di $O$ per valori crescenti degli $\{A_i\}$.
+        \end{itemize}
+    \item \textbf{\textcolor{purple}{$\{A_i\}\gamma\{f_i\}$}}:
+        \begin{itemize}
+            \item \textcolor{purple}{GroupBy(O, $\{A_i\}$, $\{f_i\}$)}: per raggruppare i record di $O$ sugli attributi
+                $\{A_i\}$ e usando le funzioni di aggregazione in $\{f_i\}$. In $\{f_i\}$ vi sono le funzioni presenti
+                nella \verb|SELECT| e nella \verb|HAVING|. I record di $O$ sono ordinati sugli $\{A_i\}$.
+        \end{itemize}
+\end{itemize}
