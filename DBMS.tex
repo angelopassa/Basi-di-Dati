@@ -330,6 +330,7 @@ Ecco una lista di operatori logici ed i corrispondenti fisici:
         \begin{itemize}
             \item \textcolor{purple}{Filter(O, $\Psi$)}: per la restrizione dei record di $O$ senza indici.
             \item \textcolor{purple}{IndexFilter(R, Idx, $\Psi$)}: per la restrizione con indice dei record di $R$.
+                Ovviamente, gli attributi utilizzati nella condizione $\Psi$ devono essere gli stessi presenti nell'indice $Idx$.
         \end{itemize}
     \item \textbf{\textcolor{purple}{$\tau{\{A_i\}}$}}:
         \begin{itemize}
@@ -339,6 +340,32 @@ Ecco una lista di operatori logici ed i corrispondenti fisici:
         \begin{itemize}
             \item \textcolor{purple}{GroupBy(O, $\{A_i\}$, $\{f_i\}$)}: per raggruppare i record di $O$ sugli attributi
                 $\{A_i\}$ e usando le funzioni di aggregazione in $\{f_i\}$. In $\{f_i\}$ vi sono le funzioni presenti
-                nella \verb|SELECT| e nella \verb|HAVING|. I record di $O$ sono ordinati sugli $\{A_i\}$.
+                nella \verb|SELECT| e nella \verb|HAVING|. I record di $O$ devono essere ordinati sugli $\{A_i\}$.
+        \end{itemize}
+    \item \textbf{\textcolor{purple}{$\bowtie_{\Psi_J}$}}:
+        \begin{itemize}
+            \item \textcolor{purple}{NestedLoop($O_E, O_I, \Psi_J$)}: in questo caso, semplicemente,
+                il \emph{NestedLoop} invoca la \verb|next()| prima su $O_E$ e poi su $O_I$, poi esegue
+                la condizione e se è rispettata aggiunge la nuova tupla al risultato, in seguito ripete questa
+                procedura iterativamente con le \verb|next()| finchè non ci sono più tuple di $O_E$ e $O_I$.
+            \item \textcolor{purple}{PageNestedLoop($O_E, O_I, \Psi_J$)}.
+            \item \textcolor{purple}{IndexNestedLoop($O_E, O_I, \Psi_J$)}: L'operando interno ($O_I$), deve essere un \emph{IndexFilter($R$, $Idx$, $\Psi^{'}_J$)}
+                oppure dev'essere un \emph{Filter($O$, $\Psi^{''}$)} dove $O$ è comunque
+                un \emph{IndexFilter($R$, $Idx$, $\Psi^{'}_J$)}. La condizione $\Psi^{'}_J$ è uguale
+                alla condizione di giunzione $\Psi_J$, solo che a runtime gli attributi di $O_E$ sono sostituiti
+                dai valori presenti per ogni tupla $r$ di $O_E$.
+                
+                A livello procedurale, qui è un po' diverso rispetto al \emph{Nested Loop}. La \emph{IndexNestedLoop},
+                invoca prima la \verb|open()| su $O_E$ e per ogni tupla restituita dalla \verb|next()|,
+                utilizza la \verb|open()| su $O_I$ passandogli come parametri i valori degli attributi di $O_E$ presenti
+                nella condizione di \verb|JOIN|, cosicchè l'\emph{IndexFilter} presente in uno dei livelli inferiori
+                possa restituire le tuple che rispettano la condizione (che come detto prima cambia a runtime); successivamente
+                l'\emph{IndexNestedLoop} chiamarà iterativamente la \verb|next()| su $O_I$ per ottenere queste tuple.
+            \item \textcolor{purple}{SortMerge($O_E, O_I, \Psi_J$)}.
         \end{itemize}
 \end{itemize}
+
+È importante sottolineare che gli operatori che presentano $R$ sono quelli
+che operano direttamente sulle tabelle, e che quindi nell'albero sono sempre delle
+foglie, mentre gli operatori che presentano $O$ operano su un oggetto che è il risultato
+di un altro nodo nel livello inferiore.

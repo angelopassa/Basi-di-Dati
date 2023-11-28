@@ -1,0 +1,103 @@
+\newpage
+\section{Gestione delle Transazioni}
+
+Le \textbf{\textcolor{purple}{transazioni}} rappresentano l'unità
+di lavoro elementare (costituita da un insieme di istruzioni SQL) che
+modificano il contenuto di un database.
+
+Le \emph{transazioni} hanno questa sintassi:
+\begin{multicols}{2}
+    \begin{lstlisting}[
+        language=SQL,
+        showspaces=false,
+        basicstyle=\ttfamily,
+        numbers=left,
+        numberstyle=\tiny,
+        commentstyle=\color{gray}
+    ]
+    begin transaction
+    [Istruzioni SQL]
+    commit work
+    \end{lstlisting}
+    \columnbreak
+    \begin{lstlisting}[
+        language=SQL,
+        showspaces=false,
+        basicstyle=\ttfamily,
+        numbers=left,
+        numberstyle=\tiny,
+        commentstyle=\color{gray}
+    ]
+    begin transaction
+    [Istruzioni SQL]
+    if [Condizione] commit work;
+    else rollback work
+    \end{lstlisting}
+\end{multicols}
+
+\paragraph{\textcolor{purple}{Proprietà delle Transazioni}}
+
+\begin{itemize}
+    \item \textcolor{purple}{A}tomicity: le transazioni deve essere eseguite in modo tale
+        che i comandi SQL all'interno di esse vengano o eseguiti tutti o non eseguiti proprio.
+
+        Quindi le transazioni che terminano prematuramente sono trattate dal sistema come se non fossaro
+        mai iniziate, quindi eventuali loro effetti sul database vengono annullati.
+    \item \textcolor{purple}{C}onsistency: le transazioni devono lasciare il database in uno stato
+        \emph{consistente}, ovvero in uno stato dove i vincoli di integrità non devono essere violati.
+    \item \textcolor{purple}{I}solation: l'esecuzione di una transazione deve essere indipendente dalle altre.
+
+        Quindi nel caso di esecuzioni concorrenti di più transazioni, il loro effetto complessivo
+        è quello di un'esecuzione seriale.
+    \item \textcolor{purple}{D}urability: l'effetto di una transazione che ha eseguito un \verb|commit work|
+        non deve andare perso.
+
+        Quindi le modifiche sul database di una transazione terminata con successo
+        sono permanenti, ovvero non possono essere alterate da eventuali malfunzionamenti.
+\end{itemize}
+
+La \emph{Gestione delle Transazioni} comprende la \emph{Gestione dell'Affidabilità} e
+la \emph{Gestione della Concorrenza}.
+
+\subsection{Gestione dell'Affidabilità}
+
+\begin{definition}[Transazione]
+    È un'unità logica di elaborazione che corrisponde ad una serie
+    di operazioni fisiche elementari sul database.
+
+    Una \textbf{\textcolor{purple}{transazione}} viene anche vista come una sequenza di azioni
+    di lettura e scrittura in memoria permanente e di azioni di elaborazione dati iin memoria temporanea.
+\end{definition}
+
+Il \textbf{\textcolor{purple}{Gestore dell'Affidabilità}} garantisce le proprietà di
+\emph{\textcolor{purple}{Atomicity}} e di \emph{\textcolor{purple}{Durability}}, è
+responsabile dell'implementazione dei comandi \verb|begin transaction|, \verb|commit| e
+\verb|rollback| e di ripristinare il sistema dopo malfunzionamenti software (\emph{ripresa a caldo})
+e hardware (\emph{a freddo}). \\
+
+Per aumentare l'efficienza, tutti i \emph{DBMS} dispongono di un buffer
+temporaneo di dati in memoria principale, il quale viene periodicamente scritto
+in memoria secondaria.
+
+Le transazioni che interessano a noi sono solo quelle di lettura e scrittura
+indicate rispettivamente con $r_i[x]$ e $w_i[x]$. Il singolo dato coinvolto può
+essere un \emph{record}, un \emph{campo} di un record o una \emph{pagina}, per semplicità
+si tratterà solo di pagine.
+
+L'operazione $r_i[x]$ comporta la lettura di una pagine nel buffer se non è già presente.
+
+L'operazione $w_i[x]$, invece, comporta le lettura nel buffer di una pagina se non è
+già presente, e la sua modifica, ma non necessariamente la sua scrittura in memoria permanente.
+Questo è il motivo per cui in caso di malfunzionamenti si potrebbe perdere l'effetto
+di un operazione.
+
+\paragraph{\textcolor{purple}{Tipi di Malfunzionamento}}
+\begin{itemize}
+    \item Fallimenti di \textcolor{purple}{transazioni}: non comportano la perdita di dati
+        in memoria permanente o temporanea, ma sono dovuti a violazioni di vincoli di integrità e
+        di protezione.
+    \item Fallimenti di \textcolor{purple}{sistema}: comportano la perdita di dati in memoria
+        temporanea ma non permanente.
+    \item \textcolor{purple}{Disastri}: comportano perdita di dati in memoria permanente, può
+        essere dovuto per esempio al danneggiamento della periferica.
+\end{itemize}
