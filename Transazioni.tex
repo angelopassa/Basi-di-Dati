@@ -101,3 +101,94 @@ di un operazione.
     \item \textcolor{purple}{Disastri}: comportano perdita di dati in memoria permanente, può
         essere dovuto per esempio al danneggiamento della periferica.
 \end{itemize}
+
+Il controllore di affidabilità utilizza un file di log nel quale sono indicate tutte
+le operazioni svolte dal \emph{DBMS}.
+
+Data una transazione $T$, con \textbf{\textcolor{purple}{B(T)}} si indica
+il record di \emph{\textbf{\textcolor{purple}{begin}}}, con \textbf{\textcolor{purple}{C(T)}}
+quello di \emph{\textbf{\textcolor{purple}{commit}}} e con \textbf{\textcolor{purple}{A(T)}}
+quello di \emph{\textbf{\textcolor{purple}{abort}}} relativi a $T$. Mentre con \textbf{\textcolor{purple}{U(T, O, BS, AS)}},
+\textbf{\textcolor{purple}{I(T, O, AS)}} e \textbf{\textcolor{purple}{D(T, O, BS)}} si indicano i record
+di \emph{\textbf{\textcolor{purple}{UPDATE}}}, \emph{\textbf{\textcolor{purple}{INSERT}}} e \emph{\textbf{\textcolor{purple}{DELETE}}}.
+Dove $O$ è l'oggetto su cui sono eseguite le operazioni, mentre $BS$ indica lo stato precedente,
+e $AS$ quello successivo.
+
+Questi record permettono di \emph{disfare} e \emph{rifare} le corrispettive
+azioni sul database. Le primitive di \textbf{\textcolor{purple}{undo}}, disfano
+un'azione sull'oggetto $O$, ricopiando in $O$ il valore $BS$.
+
+Mentre le primitiva di \textbf{\textcolor{purple}{redo}}, si utilizzano per
+rifare un'azione su un oggetto $O$, ovvero si ricopia in $O$ il valore di $AS$.
+
+I record possono essere di due tipi:
+\begin{itemize}
+    \item \textbf{\textcolor{purple}{Record di Transazione}}: quelli visti prima.
+    \item \textbf{\textcolor{purple}{Record di Sistema}}: tengono traccia delle operazioni di sistema,
+        e possono essere di due tipi, \emph{\textcolor{purple}{dump}} e \emph{\textcolor{purple}{checkpoint}}.
+        L'operazione di \emph{dump} produce una copia completa del database, ed è effettuata
+        in mutua esclusione con tutte le altre transazione, quando il sistema non è operativo.
+        La copia di \emph{backup} viene salvata in memoria permanente.
+\end{itemize}
+
+Le regole di scrittura sul log sono due:
+\begin{itemize}
+    \item \textcolor{purple}{Write Ahead Log} (WAL): la parte $BS$ di ogni record
+        deve essere scritta sul log prima che l'operazione venga effettuata sul database.
+    \item \textcolor{purple}{Commit Precedence}: la parte $AS$ di ogni record deve essere
+        scritta sul log prima di effettuare il \verb|commit| della transazione.
+\end{itemize}
+
+Gli algoritmi si differenziano in base a come trattano le transazioni e le scritture sul database.
+Noi lavoriamo sull'ipotesi che le scritture sul log vengono portate immediatamente nella
+memoria permanente.
+
+Le modifiche al database si portano mediante la politica della \emph{\textcolor{purple}{modifica libera}},
+ovvero le modifiche possono essere portare al database prima che la transazione termini.
+
+La regola per disfare, invece si chiama \textbf{\textcolor{purple}{Log Ahead Rule}}:
+se una nuova versione di una pagina rimpiazza la vecchia sul database prima
+che la transazione esegua il \verb|commit|, allora la vecchia versione deve essere
+prima scritta sul log in modo permanente.
+
+La terminazione di una transazione invece si gestisce con la regola del \emph{\textcolor{purple}{commit libero}},
+ovvero una transazione può essere considerata terminata normalmente prima che tutte le modifiche
+vengano riportate sul database.
+
+Invece la regola per rifare una transazione si chiama \textbf{\textcolor{purple}{Commit Rule}},
+cioè le nuove versione delle pagina di una transazione devono essere portate in modo
+stabile nel log prima che la transazione raggiunga il commit.
+
+Quando si verifica un ripristino, solo gli aggiornamenti più recenti
+tra quelli sul log potrebbero non essere stati riportati sul database.
+Per avere la certezza che alcune operazioni non debbano essere rieseguite,
+ci fà periodicamente un checkpoint, ovvero si scrive la marca \emph{\textcolor{purple}{CKP}}
+sul log per indicare che tutte le operazioni che la precedono sono state effettuate sul database.
+
+Quando si vuole fare un checkpoint, si scrive sul log una marca di inizio
+checkpoint che riporta un elenco di tutte le transazioni attive,
+\verb|BeginCkp{T1, ..., Tn}|, in seguito, in parallelo a tutte le altre
+operazioni delle transazioni, il gestore del buffer riporta sul disco
+tutte le pagine modificate e alla fine si scrive sul log la marca \verb|EndCkp|
+che certifica che tutte le scritture avvenute prima di \verb|BeginCkp| sono sul disco,
+mentre quelle fra \verb|BeginCkp| e \verb|EndCkp| potrebbero esserci sul disco come potrebbero
+non esserci.
+
+\paragraph{\textcolor{purple}{Gestione dei Fallimenti}}
+
+\begin{itemize}
+    \item \textcolor{purple}{Fallimenti di Transazioni}: si scrive sul log il
+        record \verb|(T, abort)| e si applica la procedura di \emph{disfare}.
+    \item \textcolor{purple}{Fallimenti di Sistema}: il database viene ripristinato col comando
+        \verb|Restart| avendo come riferimento l'ultimo checkpoint e procedendo in modo
+        che le transazioni non terminate vengano disfatte e quelle terminate vengano rifatte.
+        Si utilizza una \emph{ripresa a caldo}, ovvero si trova l'ultimo checkpoint ripercorrendo
+        il log a ritroso costruendo gli insiemi $UNDO$ e $REDO$ con le transazioni da disfare e rifare.
+        Si ripercorre di nuovo il log all'indietro fino all'ultima azione delle transazioni
+        in $UNDO$ disfacendole tutte. Infine si ripercorre il log in avanti rifacendo tutte le transazioni
+        in $REDO$.
+    \item \textcolor{purple}{Disastri}: qui si riporta in linea l'ultimo backup del database e lo
+        si aggiorna rifacendo le modifiche delle transazioni terminate normalmente.
+        Qui invece si applica una \emph{ripresa a freddo} eseguendo le operazioni descritte in precedenza
+        e si segue con una \emph{ripresa a caldo}.
+\end{itemize}
