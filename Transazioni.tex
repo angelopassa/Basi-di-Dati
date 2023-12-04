@@ -192,3 +192,125 @@ non esserci.
         Qui invece si applica una \emph{ripresa a freddo} eseguendo le operazioni descritte in precedenza
         e si segue con una \emph{ripresa a caldo}.
 \end{itemize}
+
+\subsection{Gestione della Concorrenza}
+
+Uno \emph{schedule} $S$ si dice \textbf{\emph{\textcolor{purple}{seriale}}} se le azioni
+di ciascuna transazione appaiono in sequenza senza essere spezzate da azioni di altre transazioni.
+\begin{equation*}
+    S = \{T_1, T_2, \dots, T_n\}
+\end{equation*}
+
+Uno \emph{\textcolor{purple}{schedule seriale}} è ottenibile se le transazioni sono eseguite una alla volta
+o se sono completamente indipendenti una dall'altra, ovvero l'intersezione dell'insieme di dati che accedono è
+sempre vuota. Ma questi sono scenari che non sono per niente realistici.
+
+Di solito, un \emph{DBMS} tradizionale gestisce questi problemi garantendo una proprietà
+di \emph{\textcolor{purple}{isolamento}}, ovvero facendo in modo che ogni transazione sia eseguita
+come se non ci fosse concorrenza. Nella realtà, però, la concorrenza permette di raggiungere
+maggiori livelli di efficienza e scalabilità. Questo, tuttavia comporta la gestione di
+alcune anomalie, come la \emph{perdita di aggiornamento} e la \emph{lettura sporca} o \emph{inconsistente}.
+
+\begin{definition}[Esecuzione Seriale]
+    Un'esecuzione di un insieme di transazioni $\{T_1, \dots, T_n\}$ si dice
+    \textbf{\emph{\textcolor{purple}{seriale}}} se per ogni coppia di transazioni
+    $T_i$ e $T_j$, tutte le operazioni di $T_i$ vengono eseguite prima di qualsiasi operazione
+    di $T_j$ o viceversa.
+\end{definition}
+
+\begin{definition}[Esecuzione Serializzabile]
+    Un'esecuzione di un insieme di transazioni si dice \emph{\textbf{\textcolor{purple}{serializzabile}}},
+    se produce lo stesso effetto sul database di quello ottenibile eseguendo serialmente in
+    qualche ordine solo le transazioni terminate normalmente.
+\end{definition}
+
+Per garantire la \emph{serializzabilità} delle transazioni concorrenti ci sono due classi di protocolli:
+\begin{itemize}
+    \item \textcolor{purple}{Protocolli Pessimistici}: tendono a ritardare l'esecuzione di transazioni
+        che potrebbero generare conflitti e anomalie, rispetto alla transazione eseguita in quell'istante.
+        L'approccio quindi è quello di prevenire.
+    \item \textcolor{purple}{Protocolli Ottimistici}: questi permettono l'esecuzione sovrapposta e non sincronizzata
+        delle transazioni e si effettuano controlli sui possibili
+        conflitti generati solo quando si è in procinto di eseguire il \verb|commit|.
+        Se i controlli rilevano dei conflitti viene effettuato il \verb|rollback| delle
+        azioni delle transazioni e la loro relativa riesecuzione.
+        I protocolli di questo tipo su basano su tre fasi:
+        \begin{itemize}
+            \item Fase di \textcolor{purple}{Lettura}: ogni transazione legge prima i valori degli
+                oggetti su cui deve operare dal database e li copia in variabili locali dove sono
+                eseguiti gli aggiornamenti.
+            \item Fase di \textcolor{purple}{Validazione}: si effettuano dei controlli sulla serializzabilità
+                nel caso in cui gli aggiornamenti locali devono essere propagati nel database.
+            \item Fase di \textcolor{purple}{Scrittura}: nel caso in cui gli oggetti aggiornati superano
+                la fase di validazione, si scrivono sul database.
+        \end{itemize}
+\end{itemize}
+
+Per implementare il controllo della concorrenza, i \emph{DBMS} possono
+utilizzare dei meccanismi di \verb|lock|, ovvero per ogni risorsa
+esiste una \verb|lock| di \emph{lettura} che permette l'accesso condiviso,
+ed una di \emph{scrittura} che invece è in mutua esclusione. Le \verb|lock|
+utilizzate si dicono \emph{\textcolor{purple}{multi granulari}} dato che possono
+lavorare sia a livello di tabella, che di riga e di pagina.
+\begin{itemize}
+    \item $lock_{r}(x)$: richiesta del \verb|lock| in lettura su $x$.
+    \item $lock_{w}(x)$: richiesta del \verb|lock| in scrittura su $x$.
+    \item $unlock(x)$: rilascio del \verb|lock| su $x$.
+\end{itemize}
+
+Il gestore della concorrenza, chiamato \textbf{\textcolor{purple}{serializzatore}},
+ha il compito di stabilire l'ordine in cui devono essere eseguite le singole operazioni
+per rendere serializzabile l'esecuzione di un insieme di transazioni.
+
+\begin{definition}[Strict Two Phase Locking]
+    Questo protocollo è definito da tre regole:
+    \begin{itemize}
+        \item Ogni transazione prima di effettuare un'operazione deve acquisire
+            il \verb|lock| corrispondente.
+        \item Transazioni diverse non possono ottenere \verb|lock| in conflitto.
+        \item Le \verb|lock| non vengono rilasciate fino al \verb|commit| o \verb|abort| della transazione.
+    \end{itemize}
+\end{definition}
+
+Questo tipo di protocollo può però generare situazioni \emph{deadlock}. Per gestirle
+si possono usare tre tecniche:
+\begin{itemize}
+    \item Uso dei \textbf{\textcolor{purple}{Timeout}}: ovvero ad ogni operazione
+        di \verb|lock| ha associato ad essa un \emph{timeout} entro il quale deve essere
+        completata, pena l'\verb|abort| della transazione.
+    \item \textbf{\textcolor{purple}{Deadlock Avoidance}}: per prevenire le configurazioni
+        che potrebbero portare ad un \emph{deadlock} si cerca di fare il \verb|lock| e \verb|unlock|
+        delle risorse nello stesso momento, oppure l'utilizzo di \emph{timestamp} o di
+        \emph{classi di priorità} tra le transazioni, anche se queste ultime due tecniche
+        potrebbe determinare delle situazioni di \emph{starvation}.
+    \item \textbf{\textcolor{purple}{Deadlock Detection}}: si utilizzano algortimi
+        per capire se ci si trova in un \emph{deadlock} e gestire la situazione. Ad esempio,
+        si può usare un grafo di richieste e risorse, e la presenza di un ciclo corrisponde
+        ad un \emph{deadlock}. Quindi nel caso di un ciclo si fa l'\verb|abort| di tutte le
+        transazioni coinvolte.
+\end{itemize}
+
+Un altro metodo per la gestione della concorrenza è l'utilizzo dei \textbf{\textcolor{purple}{timestamp}}
+delle transazioni, ovvero ad ogni transazione si associa un \emph{timestamp} che rappresenta
+il momento in cui inizia la transazione e ogni transazione non può leggere
+o scrivere un dato scritto da una transazione con \emph{timestamp} maggiore,
+e non può scrivere su un dato già letto da una transazione con \emph{timestamp} maggiore.
+
+\paragraph{\textcolor{purple}{Livelli di Isolamento}}
+\begin{itemize}
+    \item \textcolor{purple}{SERIALIZABLE}: assicura che una transazione $T$ legge solo
+        i cambiamenti fatii da transazioni già concluse; nessun valore letto o scritto da $T$
+        verrà cambiato da altre transazioni finchè $T$ non è conclusa; e se $T$ legge un insieme
+        di valori acceduti secondo una certa condizione di ricerca, l'insieme non viene
+        modificato da altre transazioni finchè $T$ non è conclusa.
+    \item \textcolor{purple}{REPEATABLE READ}: assicura che la transazione $T$ legge solo cambiamenti
+        fatte da transazioni concluse e che nessun valore letto o scritto da $T$
+        verrà cambiato da altre transazioni finchè $T$ non è conclusa.
+    \item \textcolor{purple}{READ COMMITTED}: assicura che la transazione $T$ legge solo cambiamenti
+        fatti da transazioni concluse e che $T$ non vede nessun cambiamento tra i valori letti
+        all'inizio di $T$, effettuato da transazioni concorrenti.
+        non concluse
+    \item \textcolor{purple}{READ UNCOMMITTED}: una transizione $T$ può leggere modifiche
+        su un oggetto fatte da una transazione in esecuzione, e dato che l'oggetto può
+        essere cambiato mentre $T$ è in esecuzione, si dice che $T$ è soggetta ad effetti fantasma.
+\end{itemize}
